@@ -92,10 +92,12 @@
 </template>
 
 <script>
-  import piecemeal_mixin from "../piecemeal_mixin";
+  import piecemeal_mixin from "./mixins/piecemeal_mixin";
+  import { AgentSelect, MeshSelect, PaperSelect, TypeSelect } from "./constraints";
 
   export default {
     name: "RelationSearch",
+    components: [AgentSelect, MeshSelect, PaperSelect, TypeSelect],
     props: {
       autoload: {
         type: Boolean,

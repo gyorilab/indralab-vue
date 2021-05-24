@@ -52,7 +52,7 @@
 </template>
 
 <script>
-  import piecemeal_mixin from '../piecemeal_mixin'
+  import piecemeal_mixin from '../mixins/piecemeal_mixin'
 
   export default {
     name: "Statement",
