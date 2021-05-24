@@ -94,10 +94,11 @@
 <script>
   import piecemeal_mixin from "./mixins/piecemeal_mixin";
   import { AgentSelect, MeshSelect, PaperSelect, TypeSelect } from "./constraints";
+  import { AgentPair } from "./result_display"
 
   export default {
     name: "RelationSearch",
-    components: [AgentSelect, MeshSelect, PaperSelect, TypeSelect],
+    components: {AgentSelect, MeshSelect, PaperSelect, TypeSelect, AgentPair},
     props: {
       autoload: {
         type: Boolean,
@@ -129,22 +130,22 @@
     },
     methods: {
       addConstraint: function(constraint_class) {
-        this.$set(this.constraints, this.cidx, {
+        this.constraints[this.cidx] = {
           class: constraint_class,
           constraint: null,
           inverted: false
-        });
+        };
         this.cidx ++;
       },
 
       reactToConstraintSelection: function(event) {
         window.console.log(event);
-        this.$set(this.constraints[this.cidx - 1], 'class', event.target.value);
+        this.constraints[this.cidx - 1].class = event.target.value;
         this.addConstraint(null);
       },
 
       removeConstraint: function(constraint_idx) {
-        this.$delete(this.constraints, constraint_idx)
+        this.constraints.splice(constraint_idx, 1);
       },
 
       searchButton: async function() {
