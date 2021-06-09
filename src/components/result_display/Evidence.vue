@@ -37,8 +37,11 @@
 </template>
 
 <script>
+  import {CurationRow, RefLink} from "@";
+
   export default {
     name: "Evidence",
+    components: {CurationRow, RefLink},
     props: {
       text: String,
       pmid: String,

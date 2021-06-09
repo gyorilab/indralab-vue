@@ -53,9 +53,11 @@
 
 <script>
   import piecemeal_mixin from '../mixins/piecemeal_mixin'
+  import {Evidence, SourceDisplay} from "@";
 
   export default {
     name: "Statement",
+    components: {Evidence, SourceDisplay},
     props: {
       evidence: Array,
       english: String,

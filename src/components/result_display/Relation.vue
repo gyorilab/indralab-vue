@@ -53,9 +53,11 @@
 
 <script>
   import piecemeal_mixin from "../mixins/piecemeal_mixin";
+  import {SourceDisplay, Statement} from "@";
 
   export default {
     name: "Relation",
+    components: {Statement, SourceDisplay},
     props: {
       english: String,
       source_counts: Object,
