@@ -23,9 +23,14 @@
     </div>
     <div class='row'>
       <div class='col'>
-        <curation-row :open='curation_shown' :stmt_hash='stmt_hash'
-                      :source_hash='source_hash' v-model="submission_status"
-                      :ev_json="original_json"/>
+        <curation-row
+            :open='curation_shown'
+            :stmt_hash='stmt_hash'
+            :source_hash='source_hash'
+            v-model="submission_status"
+            :ev_json="original_json"
+            :num_prior_curations="num_curations"
+        />
       </div>
     </div>
   </div>
