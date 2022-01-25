@@ -33,7 +33,7 @@
             <i>{{ message }}</i>
           </span>
         </div>
-        <div v-if='(previous && previous.length) || error_loading_previous || no_auth'
+        <div v-if='(previous && previous.length) || error_loading_previous || (no_auth && num_prior_curations > 0)'
              class="curation-panel">
           <h5>
             Prior Curations
@@ -86,6 +86,10 @@
       source_hash: String,
       ev_json: Object,
       stmt_hash: String,
+      num_prior_curations: {
+        type: Number,
+        required: true,
+      }
     },
     data: function() {
       return {
@@ -134,7 +138,11 @@
       },
 
       loadPrevious: function() {
-        this.getCurations();
+        if (this.num_prior_curations > 0) {
+          this.getCurations();
+        } else {
+          console.log('No prior curations to load.');
+        }
       },
 
       clear: function () {
