@@ -47,7 +47,7 @@
           </h5>
           <hr>
           <div v-if="no_auth">
-            <i>Please log in and to see previous curations.</i>
+            <i>Please log in to see previous curations.</i>
           </div>
           <div v-if="error_loading_previous">
             <i style="color: red">Sorry, we could not load previous curations: {{error_loading_previous}}</i>
