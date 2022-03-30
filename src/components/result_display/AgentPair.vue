@@ -13,7 +13,7 @@
         </h5>
       </div>
       <div class="col-auto text-right">
-        <source-display :source_counts="source_counts"></source-display>
+        <SourceDisplay :source_counts="source_counts"></SourceDisplay>
       </div>
     </div>
     <div class="error-message" v-show="search_failed">
@@ -23,7 +23,7 @@
       <div class="col">
         <div class="container right-bar">
           <span v-for="relation in list_shown" :key="relation.id">
-            <relation v-bind="relation" :context_queries="context_queries"></relation>
+            <Relation v-bind="relation" :context_queries="context_queries"></Relation>
           </span>
           <div class='text-center clickable'
                :style="`cursor: ${(searching) ? 'progress' : 'pointer'}`"

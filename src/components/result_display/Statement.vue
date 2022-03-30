@@ -18,14 +18,14 @@
         </h5>
       </div>
       <div class="col-auto text-right" v-if="sources">
-        <source-display :source_counts="sources"></source-display>
+        <SourceDisplay :source_counts="sources"></SourceDisplay>
       </div>
     </div>
     <div class="row">
       <div class="col">
         <div class="container">
           <div class='ev-list' v-show='show_list'>
-            <evidence v-for='ev in list_shown'
+            <Evidence v-for='ev in list_shown'
                       :key='ev.source_hash'
                       v-bind='ev'
                       :stmt_hash='hash'/>
@@ -118,6 +118,8 @@
           'with_cur_counts=true',
           'filter_ev=true'
         ];
+        console.log(`limit=${this.next_batch}`);
+        console.log(`offset=${this.end_n}`);
         if (this.context_queries != null)
           params = [...params, ...this.context_queries]
 

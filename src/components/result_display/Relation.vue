@@ -13,7 +13,7 @@
         </h5>
       </div>
       <div class="col-auto text-right">
-        <source-display :source_counts="source_counts"></source-display>
+        <SourceDisplay :source_counts="source_counts"></SourceDisplay>
       </div>
     </div>
     <div class="error-message" v-show="search_failed">
@@ -22,7 +22,7 @@
     <div class="row stmt_list" v-show="show_stmts">
       <div class="col">
         <div class="container right-bar">
-          <statement v-for="[hash, stmt] of list_shown"
+          <Statement v-for="[hash, stmt] of list_shown"
                      :key="hash"
                      :english="stmt.english"
                      :hash="hash"
@@ -32,7 +32,7 @@
                      :evidence="stmt.evidence"
                      :total_evidence="evidence_counts[hash]"
                      :context_queries="context_queries"
-                     :init_expanded="Object.keys(stmts).length === 1"></statement>
+                     :init_expanded="Object.keys(stmts).length === 1"></Statement>
         </div>
         <div class='text-center clickable'
              :style="`cursor: ${(searching) ? 'progress' : 'pointer'}`"

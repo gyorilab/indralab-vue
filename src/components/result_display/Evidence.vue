@@ -18,12 +18,12 @@
       </div>
       <div class='col-10' v-html='always_text'></div>
       <div class='col-1 text-right'>
-        <ref-link :text_refs="text_refs"></ref-link>
+        <RefLink :text_refs="text_refs"></RefLink>
       </div>
     </div>
     <div class='row'>
       <div class='col'>
-        <curation-row
+        <CurationRow
             :open='curation_shown'
             :stmt_hash='stmt_hash'
             :source_hash='source_hash'
