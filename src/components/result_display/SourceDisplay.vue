@@ -26,6 +26,11 @@
       source_counts: {
         type: Object,
         default: null
+      },
+      sourceDefaults: {
+        // Use to override global $sources
+        type: Object,
+        default: null
       }
     },
     methods: {
@@ -40,8 +45,11 @@
       },
     },
     computed: {
-      sources: function() {
-        return this.$sources
+      sources() {
+        if (this.sourceDefaults) {
+          return this.sourceDefaults;
+        }
+        return this.$sources;
       },
 
       badgeClass: function() {
