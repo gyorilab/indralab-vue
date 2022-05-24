@@ -84,7 +84,8 @@
         type: Boolean,
         default: false
       },
-      url: {
+      stmt_hash_url: {
+        // Use to replace the global $stmt_hash_url
         type: String,
         default: null
       },
@@ -195,8 +196,8 @@
         return ret;
       },
       evidence_url: function() {
-        if (this.url != null)
-          return this.url;
+        if (this.stmt_hash_url)
+          return this.stmt_hash_url;
         return this.$stmt_hash_url
       },
       displayed_badges: function() {
