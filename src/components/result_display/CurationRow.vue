@@ -1,7 +1,7 @@
 <template>
   <div class='container' v-show='open'>
     <div class='row cchild' style='border-top: 1px solid #FFFFFF;'>
-      <div class='col' style='padding: 0px; border-top: 1px solid #FFFFFF;'>
+      <div class='col' style='padding: 0; border-top: 1px solid #FFFFFF;'>
         <div class="form-inline">
           <select class="form-control form-elem"
                   v-model='error_type'>
@@ -89,7 +89,15 @@
       num_prior_curations: {
         type: Number,
         required: true,
-      }
+      },
+      curation_url_override: {
+        type: String,
+        default: null,
+      },
+      curation_list_url_override: {
+        type: String,
+        default: null,
+      },
     },
     data: function() {
       return {
@@ -157,8 +165,8 @@
           ev_hash: this.source_hash,
           ev_json: this.ev_json,
         };
-        let url = this.$curation_url;
-        if (this.$curation_url[this.$curation_url.length - 1] !== '/')
+        let url = this.curation_url;
+        if (this.curation_url[this.curation_url.length - 1] !== '/')
           url += '/';
         url += this.stmt_hash;
         const resp = await fetch(url, {
@@ -196,7 +204,7 @@
       },
 
       getCurations: async function() {
-        const resp = await fetch(`${this.$curation_list_url}/${this.stmt_hash}/${this.source_hash}`, {
+        const resp = await fetch(`${this.curation_list_url}/${this.stmt_hash}/${this.source_hash}`, {
           method: 'GET',
         });
         window.console.log('Response Status: ' + resp.status);
@@ -219,6 +227,22 @@
         }
       },
     },
+    computed: {
+      curation_url() {
+        if (this.curation_url_override) {
+          return this.curation_url_override;
+        } else {
+          return this.$curation_url;
+        }
+      },
+      curation_list_url() {
+        if (this.curation_list_url_override) {
+          return this.curation_list_url_override;
+        } else {
+          return this.$curation_list_url;
+        }
+      },
+    },
     watch: {
       open: function(newOpen, oldOpen) {
         if (!oldOpen && newOpen && this.previous == null)
@@ -227,7 +251,7 @@
       status: function (status) {
         this.$emit('input', status)
       }
-    }
+    },
   }
 </script>
 
