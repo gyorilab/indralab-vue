@@ -59,7 +59,14 @@
     name: "Statement",
     components: {Evidence, SourceDisplay},
     props: {
-      evidence: Array,
+      // Look into the statement JSON schema:
+      // https://raw.githubusercontent.com/sorgerlab/indra/master/indra/resources/statements_schema.json
+      // and ajv for validation: https://github.com/ajv-validator/ajv
+      // See also: https://json-schema.org/
+      evidence: {
+        type: Array,
+        required: true
+      },
       english: String,
       hash: String,
       sources: Object,

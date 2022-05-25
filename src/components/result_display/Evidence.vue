@@ -46,7 +46,10 @@
       text: String,
       pmid: String,
       source_api: String,
-      text_refs: Object,
+      text_refs: {
+        type: Object,
+        required: true,
+      },
       num_curations: Number,
       num_correct: {
         type: Number,

@@ -20,7 +20,10 @@
   export default {
     name: "RefLink",
     props: {
-      text_refs: Object,
+      text_refs: {
+        type: Object,
+        required: true
+      },
     },
     data: function() {
       return {
