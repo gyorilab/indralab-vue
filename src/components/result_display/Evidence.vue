@@ -17,7 +17,7 @@
         </div>
       </div>
       <div class='col-10' v-html='always_text'></div>
-      <div class='col-1 text-right'>
+      <div class='col-1 text-end'>
         <RefLink :text_refs="text_refs"></RefLink>
       </div>
     </div>

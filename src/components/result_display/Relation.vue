@@ -3,16 +3,16 @@
     <div class="row header"
          :style="`cursor: ${(searching) ? 'progress': 'pointer'};`"
          @click="toggleStmts">
-      <div class='col text-left'>
+      <div class='col text-start'>
         <h5>
           <span v-html="english"></span>
           <small v-if='cur_count'
-                 class='badge badge-success badge-pill'>
+                 class='badge badge-success rounded-pill'>
             &#9998; {{ cur_count }}
           </small>
         </h5>
       </div>
-      <div class="col-auto text-right">
+      <div class="col-auto text-end">
         <SourceDisplay :source_counts="source_counts"></SourceDisplay>
       </div>
     </div>

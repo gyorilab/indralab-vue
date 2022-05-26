@@ -1,11 +1,11 @@
 <template>
   <div class="statement">
     <div class="row clickable" @click="toggleList">
-      <div class="col text-left">
+      <div class="col text-start">
         <h5>
           <span v-html='english'></span>
           <small v-for='badge in displayed_badges'
-                :class="`badge badge-pill float-${badge.loc}`"
+                :class="`badge rounded-pill float-${badge.loc === 'right' ? 'end' : 'start'}`"
                 :style="`background-color: ${badge.color}; color: white;`"
                 :title="badge.title"
                 :key='badge.label'>
@@ -17,7 +17,7 @@
           </small>
         </h5>
       </div>
-      <div class="col-auto text-right" v-if="sources">
+      <div class="col-auto text-end" v-if="sources">
         <SourceDisplay :source_counts="sources"></SourceDisplay>
       </div>
     </div>
