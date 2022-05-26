@@ -96,7 +96,10 @@
         type: String,
         default: null
       },
-      badges: Array
+      badges: {
+        type: Array,
+        default: null
+      },
     },
     data: function() {
       return {
