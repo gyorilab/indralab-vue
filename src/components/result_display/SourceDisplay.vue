@@ -1,12 +1,15 @@
 <template>
   <span class="source-display">
     <span v-for="(src_group, cat, idx) in sources" :key="cat">
-      <span v-if="idx > 0" class="badge badge-source">|</span>
-      <span v-for="src in src_group"
-            :key="src">
-        <span :class="`${badgeClass} source-${src}`"
-              v-if="showSrc(src)"
-              :title="src">
+      <span v-if="idx > 0" class="badge badge-source" style="color: #212529"
+        >|</span
+      >
+      <span v-for="src in src_group" :key="src">
+        <span
+          :class="`${badgeClass} source-${src}`"
+          v-if="showSrc(src)"
+          :title="src"
+        >
           <span v-if="source_counts">
             {{ source_counts[src] }}
           </span>
@@ -20,51 +23,46 @@
 </template>
 
 <script>
-  export default {
-    name: "SourceDisplay",
-    props: {
-      source_counts: {
-        type: Object,
-        default: null
-      },
-      sourceDefaults: {
-        // Use to override global $sources
-        type: Object,
-        default: null
+export default {
+  name: "SourceDisplay",
+  props: {
+    source_counts: {
+      type: Object,
+      default: null,
+    },
+    sourceDefaults: {
+      // Use to override global $sources
+      type: Object,
+      default: null,
+    },
+  },
+  methods: {
+    showSrc(src) {
+      if (this.source_counts === null) return true;
+      if (!(src in this.source_counts)) return false;
+      else if (this.source_counts[src] > 0) return true;
+      return false;
+    },
+  },
+  computed: {
+    sources() {
+      if (this.sourceDefaults) {
+        return this.sourceDefaults;
       }
+      return this.$sources;
     },
-    methods: {
-      showSrc: function(src) {
-        if (this.source_counts === null)
-          return true;
-        if ( !(src in this.source_counts) )
-          return false;
-        else if ( this.source_counts[src] > 0 )
-          return true;
-        return false;
-      },
-    },
-    computed: {
-      sources() {
-        if (this.sourceDefaults) {
-          return this.sourceDefaults;
-        }
-        return this.$sources;
-      },
 
-      badgeClass: function() {
-        let base = 'badge badge-source';
-        if (this.source_counts === null)
-          return  base + ' label';
-        else
-          return base;
-      }
-    }
-  }
+    badgeClass() {
+      let base = "badge badge-source";
+      return this.source_counts === null ? base + " label" : base;
+    },
+  },
+};
 </script>
 
 <style scoped>
-  .label {
-    margin: 1px;
-  }
+/* Fixme: Use BootStrap 5 'mb-1' class or similar instead */
+.label {
+  margin: 1px;
+}
 </style>
