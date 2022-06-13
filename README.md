@@ -1,11 +1,8 @@
 # IndraLab Vue Tools
 
-## A note on Bootstrap and jQuery
+## Vue version
 
-This is the Vue3 compatible version of this repository. Because Vue.js and jQuery interfere with each other 
-(see e.g. [here](https://stackoverflow.com/questions/65547199/using-bootstrap-5-with-vue-3) and
-[here](https://vuejsdevelopers.com/2017/05/20/vue-js-safely-jquery-plugin/)), this project assumes the use of 
-BootStrap 5.x, since that is the first BootStrap version that does not rely on jQuery. 
+This is the Vue3 compatible version of this repository. 
 
 ## Project setup
 ```
