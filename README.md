@@ -5,27 +5,32 @@
 This is the Vue3 compatible version of this repository. 
 
 ## Project setup
-```
+```shell
 npm install
 ```
 
 ### Compiles and hot-reloads for development
-```
+```shell
 npm run serve
 ```
 
 ### Compiles and minifies for production
-```
+```shell
 npm run build
 ```
 
 ### Lints and fixes files
-```
+```shell
 npm run lint
 ```
 
-### Deploys build to remote host on s3.
+### Packs the project for local install
+```shell
+npm pack
 ```
+
+### Deploys build to remote host on s3.
+```shell
 npm run deploy -- <deployment>
 ```
 where deployment is either "dev", "latest", or "stable". Note that
