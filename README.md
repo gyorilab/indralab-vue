@@ -28,6 +28,8 @@ npm run lint
 ```shell
 npm pack
 ```
+this will create a .tgz, e.g. `indralab-vue-0.1.1.tgz`, file in the current directory which can be pointed to by npm 
+for local install.
 
 ### Deploys build to remote host on s3.
 ```shell
