@@ -30,7 +30,7 @@ const piecemeal_mixin = {
 
         this.loadMore();
     },
-    destroyed: function() {
+    unmounted: function() {
         window.console.log("Removing event listener to scroll.");
         window.removeEventListener('scroll', this.updateBottom)
     },

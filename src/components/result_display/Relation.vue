@@ -3,17 +3,17 @@
     <div class="row header"
          :style="`cursor: ${(searching) ? 'progress': 'pointer'};`"
          @click="toggleStmts">
-      <div class='col text-left'>
+      <div class='col text-start'>
         <h5>
           <span v-html="english"></span>
           <small v-if='cur_count'
-                 class='badge badge-success badge-pill'>
+                 class='badge badge-success rounded-pill'>
             &#9998; {{ cur_count }}
           </small>
         </h5>
       </div>
-      <div class="col-auto text-right">
-        <source-display :source_counts="source_counts"></source-display>
+      <div class="col-auto text-end">
+        <SourceDisplay :source_counts="source_counts"></SourceDisplay>
       </div>
     </div>
     <div class="error-message" v-show="search_failed">
@@ -22,7 +22,7 @@
     <div class="row stmt_list" v-show="show_stmts">
       <div class="col">
         <div class="container right-bar">
-          <statement v-for="[hash, stmt] of list_shown"
+          <Statement v-for="[hash, stmt] of list_shown"
                      :key="hash"
                      :english="stmt.english"
                      :hash="hash"
@@ -32,7 +32,7 @@
                      :evidence="stmt.evidence"
                      :total_evidence="evidence_counts[hash]"
                      :context_queries="context_queries"
-                     :init_expanded="Object.keys(stmts).length === 1"></statement>
+                     :init_expanded="Object.keys(stmts).length === 1"></Statement>
         </div>
         <div class='text-center clickable'
              :style="`cursor: ${(searching) ? 'progress' : 'pointer'}`"
@@ -52,10 +52,12 @@
 </template>
 
 <script>
-  import piecemeal_mixin from "../piecemeal_mixin";
+  import piecemeal_mixin from "../mixins/piecemeal_mixin";
+  import {SourceDisplay, Statement} from "@";
 
   export default {
     name: "Relation",
+    components: {Statement, SourceDisplay},
     props: {
       english: String,
       source_counts: Object,

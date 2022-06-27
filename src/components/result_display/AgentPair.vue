@@ -3,17 +3,17 @@
     <div class="row header"
          :style="`cursor: ${(searching) ? 'progress': 'pointer'};`"
          @click="toggleRelations">
-      <div class='col text-left'>
+      <div class='col text-start'>
         <h5>
           <span v-html="english"></span>
           <small v-if='cur_count'
-                 class='badge badge-success badge-pill'>
+                 class='badge badge-success rounded-pill'>
             &#9998; {{ cur_count }}
           </small>
         </h5>
       </div>
-      <div class="col-auto text-right">
-        <source-display :source_counts="source_counts"></source-display>
+      <div class="col-auto text-end">
+        <SourceDisplay :source_counts="source_counts"></SourceDisplay>
       </div>
     </div>
     <div class="error-message" v-show="search_failed">
@@ -23,7 +23,7 @@
       <div class="col">
         <div class="container right-bar">
           <span v-for="relation in list_shown" :key="relation.id">
-            <relation v-bind="relation" :context_queries="context_queries"></relation>
+            <Relation v-bind="relation" :context_queries="context_queries"></Relation>
           </span>
           <div class='text-center clickable'
                :style="`cursor: ${(searching) ? 'progress' : 'pointer'}`"
@@ -44,10 +44,12 @@
 </template>
 
 <script>
-  import piecemeal_mixin from '../piecemeal_mixin'
+  import piecemeal_mixin from '../mixins/piecemeal_mixin'
+  import {SourceDisplay, Relation} from "@";
 
   export default {
     name: "AgentPair",
+    components: {SourceDisplay, Relation},
     props: {
       english: String,
       source_counts: Object,

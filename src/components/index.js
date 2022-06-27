@@ -1,12 +1,16 @@
-export {default as Statement} from './Statement'
-export {default as RefLink} from './RefLink'
-export {default as Evidence} from './Evidence'
-export {default as CurationRow} from './CurationRow'
-export {default as AgentSelect} from './AgentSelect'
-export {default as TypeSelect} from './TypeSelect'
-export {default as MeshSelect} from './MeshSelect'
-export {default as PaperSelect} from './PaperSelect'
-export {default as RelationSearch} from './RelationSearch'
-export {default as Relation} from './Relation'
-export {default as AgentPair} from './AgentPair'
-export {default as SourceDisplay} from './SourceDisplay'
+export {
+  AgentPair,
+  Relation,
+  Statement,
+  Evidence,
+  CurationRow,
+  SourceDisplay,
+  RefLink,
+} from "./result_display";
+export {
+  AgentSelect,
+  TypeSelect,
+  MeshSelect,
+  PaperSelect,
+} from "./constraints";
+export { default as RelationSearch } from "./RelationSearch";
