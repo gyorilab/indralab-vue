@@ -9,7 +9,7 @@
         OR
         <button class="agent-select-button btn btn-primary"
                 @click='lookupOptions'>
-            Ground with GILDA
+            Find Identifier with GILDA
         </button>
         <span v-show='searching'>Searching...</span>
         <span v-show='options_empty'>No mesh IDs found...</span>

@@ -4,7 +4,7 @@
     <div id="search-row">
       <div class="nav-btn">
         <h4>
-          Query Constraints
+          Query Constraints (TESTING)
           <button class="btn"
                   :disabled="cannotGoBack"
                   @click="backButton">
@@ -17,56 +17,45 @@
           </button>
         </h4>
       </div>
-      <div id='seach-box'>
+      <div id="seach-box">
         <div class="form-inline"
-             v-for="(constraint, const_idx) in constraints"
-             :key='const_idx'>
-          <span v-if="!constraint.class">
-            <span class='spaced'>
-                &#10133;
-            </span>
-            <select class="form-control"
-                    @input="reactToConstraintSelection($event)">
-              <option :value="null" selected hidden>
-                select constraint...
-              </option>
-              <option v-for="(type_val, type_name) in constraint_classes"
-                      :key="type_name"
-                      :value="type_val">
-                {{ type_name }} constraint
-              </option>
-            </select>
-          </span>
-          <span v-else>
-            <span class='spaced click'
-                  @click='removeConstraint(const_idx)'>
-                &#10005;
-            </span>
-            <span v-if="constraint.class === 'HasAgent'">
-              <b>Agent:</b><agent-select v-model="constraint.constraint"></agent-select>
-            </span>
-            <span v-else-if="constraint.class === 'HasType'">
-              <b>Type:</b><type-select v-model="constraint.constraint"></type-select>
-            </span>
-            <span v-else-if="constraint.class === 'FromMeshIds'">
-              <b>Mesh:</b><mesh-select v-model="constraint.constraint"></mesh-select>
-            </span>
-            <span v-else-if="constraint.class === 'FromPapers'">
-              <b>Paper:</b><paper-select v-model="constraint.constraint"></paper-select>
-            </span>
-            <span v-else>
-              <b style="color: red;">Developer error: unhandled constraint.class.</b>
-            </span>
-          </span>
-        </div>
-        <div>
-          <button class="btn btn-primary"
-                  @click='searchButton'
-                  :disabled="searching">
-            Search
-          </button>
-        </div>
+           v-for="(constraint, const_idx) in constraints"
+           :key="const_idx">
+
+        <template v-if="constraint.class === 'HasAgent'">
+          <b>Agent:</b>
+          <agent-select v-model="constraint.constraint"></agent-select>
+        </template>
+
+        <template v-else-if="constraint.class === 'HasType'">
+          <b>Type:</b>
+          <type-select v-model="constraint.constraint"></type-select>
+          <br>
+        </template>
+
+        <template v-else-if="constraint.class === 'FromMeshIds'">
+          <b>Mesh:</b>
+          <mesh-select v-model="constraint.constraint"></mesh-select>
+        </template>
+
+        <template v-else-if="constraint.class === 'FromPapers'">
+          <b>Paper:</b>
+          <paper-select v-model="constraint.constraint"></paper-select>
+        </template>
+
+        <template v-else>
+          <b style="color: red;">Developer error: unhandled constraint.class.</b>
+        </template>
       </div>
+
+      <div>
+        <button class="btn btn-primary"
+                @click="searchButton"
+                :disabled="searching">
+          Search
+        </button>
+      </div>
+    </div>
     </div>
     <div id="error-box" class="nvm" v-show="search_error">
       <hr>
@@ -126,13 +115,23 @@
       }
     },
     methods: {
-      addConstraint: function(constraint_class) {
-        this.$set(this.constraints, this.cidx, {
-          class: constraint_class,
-          constraint: null,
-          inverted: false
-        });
-        this.cidx ++;
+      addConstraint(constraint_class) {
+          let def = null;
+          if (constraint_class === 'HasAgent') {
+            def = { role: 'any' };               // ← keep it minimal
+          } else if (constraint_class === 'HasType') {
+            def = { stmt_types: [] };
+          } else if (constraint_class === 'FromMeshIds') {
+            def = { mesh_ids: [] };
+          } else if (constraint_class === 'FromPapers') {
+            def = { paper_list: [] };
+          }
+          this.$set(this.constraints, this.cidx, {
+            class: constraint_class,
+            constraint: def,
+            inverted: false
+          });
+          this.cidx++;
       },
 
       reactToConstraintSelection: function(event) {
@@ -145,22 +144,17 @@
         this.$delete(this.constraints, constraint_idx)
       },
 
-      searchButton: async function() {
-        let query;
-        for (let cidx in this.constraints) {
-            query = this.constraints[cidx];
-            if (!query.class)
-              continue
-            if (!query.constraint) {
-                alert(`Please fill out ${query.class} form completely.`);
-                return;
-            }
+      async searchButton() {
+        const active = Object.values(this.constraints).filter(c => this.isFilled(c));
+        if (active.length === 0) {
+          alert('Please enter at least one constraint.');
+          return;
         }
         this.next_offset = 0;
         this.agent_pairs = null;
         this.complexes_covered = null;
-        this.pushHistory();
-        return await this.search()
+        this.pushHistory?.(); // harmless if you later remove history
+        return await this.search();
       },
 
       search: async function() {
@@ -182,25 +176,24 @@
         let query_jsons = [];
         let cumulative_queries = {};
         for (let idx in this.constraints) {
-          window.console.log(`Processing constraint ${idx}`);
+          const param = this.constraints[idx];
+          if (!this.isFilled(param)) continue; // ← skip empty constraints
 
-          // Add the param to the query JSON
-          let param = this.constraints[idx];
-          let constraint = param.constraint;
-          if (param.class === 'HasAgent')
+          if (param.class === 'HasAgent') {
             query_jsons.push(param);
-          else if (param.class !== null) {
+          } else {
             for (let [class_name, list_name] of [
               ['HasType', 'stmt_types'],
               ['FromMeshIds', 'mesh_ids'],
               ['FromPapers', 'paper_list']
             ]) {
-              if (class_name !== param.class)
-                continue
-              if (class_name in cumulative_queries)
-                cumulative_queries[class_name].constraint[list_name]
-                  .concat(constraint[list_name]);
-              else {
+              if (class_name !== param.class) continue;
+              if (cumulative_queries[class_name]) {
+                // merge lists
+                cumulative_queries[class_name].constraint[list_name] =
+                  cumulative_queries[class_name].constraint[list_name]
+                    .concat(param.constraint[list_name]);
+              } else {
                 cumulative_queries[class_name] = param;
                 query_jsons.push(param);
               }
@@ -332,6 +325,20 @@
 
       getMore: async function() {
         return await this.search()
+      },
+
+      isFilled(param) {
+        if (!param || !param.class || !param.constraint) return false;
+        const c = param.constraint;
+
+        if (param.class === 'HasAgent') {
+          return !!c.agent_id;
+        }
+        if (param.class === 'HasType')   return Array.isArray(c.stmt_types) && c.stmt_types.length > 0;
+        if (param.class === 'FromMeshIds') return Array.isArray(c.mesh_ids) && c.mesh_ids.length > 0;
+        if (param.class === 'FromPapers')  return Array.isArray(c.paper_list) && c.paper_list.length > 0;
+
+        return false;
       }
     },
     computed: {
@@ -353,9 +360,11 @@
        return this.history_idx >= (this.search_history.length - 1);
       },
     },
-    created: function() {
+    created() {
       this.addConstraint('HasAgent');
-      this.addConstraint(null);
+      this.addConstraint('HasType');
+      this.addConstraint('FromMeshIds');
+      this.addConstraint('FromPapers');
     },
     mixins: [piecemeal_mixin]
   }
