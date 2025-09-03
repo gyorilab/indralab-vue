@@ -17,30 +17,59 @@
           </button>
         </h4>
       </div>
-      <div id="seach-box">
-        <div class="form-inline"
-           v-for="(constraint, const_idx) in constraints"
-           :key="const_idx">
+    <div id="seach-box">
 
-        <template v-if="constraint.class === 'HasAgent'">
-          <b>Agent:</b>
-          <agent-select v-model="constraint.constraint"></agent-select>
-        </template>
+      <!-- Agents (render once) -->
+      <div class="agents">
+        <div
+          class="agent-block"
+          v-for="(pair, i) in hasAgentConstraints"
+          :key="pair.idx"
+        >
+          <b>Agent {{ i + 1 }}:</b>
+          <agent-select v-model="pair.c.constraint"></agent-select>
 
-        <template v-else-if="constraint.class === 'HasType'">
+          <!-- red remove on Agent 2+ only -->
+          <button
+            class="btn btn-sm btn-outline-danger"
+            v-if="hasAgentConstraints.length > 1 && i > 0"
+            @click="removeConstraint(pair.idx)"
+            style="margin-left:6px"
+            title="Remove this agent"
+          >
+            ×
+          </button>
+        </div>
+
+        <button
+          class="btn btn-sm btn-outline-primary"
+          @click="addAgent"
+          :disabled="hasAgentConstraints.length >= 2"
+        >
+          + Add agent
+        </button>
+      </div>
+
+      <!-- Everything else (render each once) -->
+      <div
+        class="form-inline"
+        v-for="pair in nonAgentConstraints"
+        :key="pair.idx"
+      >
+        <template v-if="pair.c.class === 'HasType'">
           <b>Type:</b>
-          <type-select v-model="constraint.constraint"></type-select>
+          <type-select v-model="pair.c.constraint"></type-select>
           <br>
         </template>
 
-        <template v-else-if="constraint.class === 'FromMeshIds'">
+        <template v-else-if="pair.c.class === 'FromMeshIds'">
           <b>Mesh:</b>
-          <mesh-select v-model="constraint.constraint"></mesh-select>
+          <mesh-select v-model="pair.c.constraint"></mesh-select>
         </template>
 
-        <template v-else-if="constraint.class === 'FromPapers'">
+        <template v-else-if="pair.c.class === 'FromPapers'">
           <b>Paper:</b>
-          <paper-select v-model="constraint.constraint"></paper-select>
+          <paper-select v-model="pair.c.constraint"></paper-select>
         </template>
 
         <template v-else>
@@ -57,6 +86,7 @@
       </div>
     </div>
     </div>
+
     <div id="error-box" class="nvm" v-show="search_error">
       <hr>
       <i style="color: red">Failed to load search results: {{ search_error }}.</i>
@@ -339,7 +369,11 @@
         if (param.class === 'FromPapers')  return Array.isArray(c.paper_list) && c.paper_list.length > 0;
 
         return false;
-      }
+      },
+      addAgent () {
+    // reuse existing addConstraint to add another HasAgent
+    this.addConstraint('HasAgent');
+  }
     },
     computed: {
       empty_relations: function() {
@@ -359,6 +393,17 @@
       cannotGoForward: function() {
        return this.history_idx >= (this.search_history.length - 1);
       },
+      hasAgentConstraints () {
+    return Object.keys(this.constraints)
+      .map(k => ({ idx: Number(k), c: this.constraints[k] }))
+      .filter(pair => pair.c && pair.c.class === 'HasAgent');
+  },
+
+  nonAgentConstraints () {
+    return Object.keys(this.constraints)
+      .map(k => ({ idx: Number(k), c: this.constraints[k] }))
+      .filter(pair => pair.c && pair.c.class !== 'HasAgent');
+  },
     },
     created() {
       this.addConstraint('HasAgent');

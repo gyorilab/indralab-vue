@@ -1,7 +1,6 @@
 <template>
   <span class="mesh-select">
       <span v-if="!options || options_empty">
-        <span class="label">text:</span>
         <input class="form-control"
                type="text"
                v-model="mesh_str"
