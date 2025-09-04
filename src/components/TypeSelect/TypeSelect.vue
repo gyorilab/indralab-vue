@@ -79,7 +79,7 @@ export default {
 
 <style scoped>
 .type-select {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 12px;
   margin: 0.2em;

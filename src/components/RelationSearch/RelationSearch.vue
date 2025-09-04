@@ -5,7 +5,7 @@
       <small class="text-muted">On this page, you can search for statements by specifying one or more constraints such as agent, statement type, MeSH term, or paper. By default, a single agent search box is shown. You can add a second agent using the “+ Add agent” button, or remove it with the red “×” button. Additional constraint types (type, MeSH, paper) are always available below. After filling in your desired constraints, click the “Search” button to retrieve statements that match your criteria.</small>
       <div class="nav-btn">
         <h4>
-          Statement Searching (Development)
+          Statement Searching (Testing)
           <button class="btn"
                   :disabled="cannotGoBack"
                   @click="backButton">
@@ -19,8 +19,6 @@
         </h4>
       </div>
     <div id="seach-box">
-
-      <!-- Agents (render once) -->
       <div class="agents">
         <div
           class="agent-block"
@@ -51,41 +49,68 @@
         </button>
       </div>
 
-      <!-- Everything else (render each once) -->
-      <div
-        class="form-inline"
-        v-for="pair in nonAgentConstraints"
-        :key="pair.idx"
-      >
-        <template v-if="pair.c.class === 'HasType'">
+      <div class="form-inline"
+         v-for="pair in nonAgentConstraints"
+         :key="pair.idx">
+
+        <!-- blank slot: choose what to add (your current code) -->
+        <span v-if="!pair.c.class">
+        <span class="spaced">More filters:</span>
+        <select class="form-control"
+                @input="reactToConstraintSelection($event, pair.idx)">
+          <option :value="null" selected hidden>select constraint...</option>
+          <option v-for="(type_val, type_name) in constraint_classes"
+                  :key="type_name"
+                  :value="type_val">
+            {{ type_name }} constraint
+          </option>
+        </select>
+      </span>
+
+      <!-- filled constraint (non-agent only) -->
+      <span v-else>
+        <span v-if="pair.c.class === 'HasType'">
           <b>Statement Relation Types:</b>
           <type-select v-model="pair.c.constraint"></type-select>
-          <br>
-        </template>
+        </span>
 
-        <template v-else-if="pair.c.class === 'FromMeshIds'">
-          <b>Mesh:</b>
+        <span v-else-if="pair.c.class === 'FromMeshIds'">
+          <b>MeSH:</b>
           <mesh-select v-model="pair.c.constraint"></mesh-select>
-        </template>
+          <button
+            class="btn btn-sm btn-outline-danger"
+            @click="removeConstraint(pair.idx)"
+            style="margin-left:6px"
+            title="Remove MeSH constraint"
+          >×</button>
+        </span>
 
-        <template v-else-if="pair.c.class === 'FromPapers'">
+        <span v-else-if="pair.c.class === 'FromPapers'">
           <b>Paper:</b>
           <paper-select v-model="pair.c.constraint"></paper-select>
-        </template>
+          <button
+            class="btn btn-sm btn-outline-danger"
+            @click="removeConstraint(pair.idx)"
+            style="margin-left:6px"
+            title="Remove Paper constraint"
+          >×</button>
+        </span>
 
-        <template v-else>
-          <b style="color: red;">Developer error: unhandled constraint.class.</b>
-        </template>
-      </div>
+        <span v-else>
+            <b style="color: red;">Developer error: unhandled constraint.class.</b>
+          </span>
+        </span>
+        </div>
 
-      <div>
-        <button class="btn btn-primary"
-                @click="searchButton"
-                :disabled="searching">
-          Search
-        </button>
+
+        <div>
+          <button class="btn btn-primary"
+                  @click="searchButton"
+                  :disabled="searching">
+            Search
+          </button>
+        </div>
       </div>
-    </div>
     </div>
 
     <div id="error-box" class="nvm" v-show="search_error">
@@ -128,8 +153,6 @@
         constraints: {},
         cidx: 0,
         constraint_classes: {
-          agent: 'HasAgent',
-          type: 'HasType',
           mesh: 'FromMeshIds',
           paper: 'FromPapers'
         },
@@ -146,33 +169,46 @@
       }
     },
     methods: {
-      addConstraint(constraint_class) {
-          let def = null;
-          if (constraint_class === 'HasAgent') {
-            def = { role: 'any' };
-          } else if (constraint_class === 'HasType') {
-            def = { stmt_types: [] };
-          } else if (constraint_class === 'FromMeshIds') {
-            def = { mesh_ids: [] };
-          } else if (constraint_class === 'FromPapers') {
-            def = { paper_list: [] };
-          }
-          this.$set(this.constraints, this.cidx, {
-            class: constraint_class,
-            constraint: def,
-            inverted: false
-          });
-          this.cidx++;
-      },
+      addConstraint (constraint_class) {
+        // used when you pre-add Agent/Type at created()
+        let def = null;
+        if (constraint_class === 'HasAgent')    def = { role: 'any' };
+        else if (constraint_class === 'HasType') def = { stmt_types: [] };
+        else if (constraint_class === 'FromMeshIds') def = { mesh_ids: [] };
+        else if (constraint_class === 'FromPapers')  def = { paper_list: [] };
 
-      reactToConstraintSelection: function(event) {
-        window.console.log(event);
-        this.$set(this.constraints[this.cidx - 1], 'class', event.target.value);
-        this.addConstraint(null);
+        this.$set(this.constraints, this.cidx, {
+          class: constraint_class,
+          constraint: def,
+          inverted: false
+        });
+        this.cidx++;
       },
+      addBlankSlot () {
+        this.$set(this.constraints, this.cidx, {
+          class: null,            // ← shows the "select constraint..." row
+          constraint: null,
+          inverted: false
+        });
+        this.cidx++;
+      },
+      ensureBlankSlot () {
+        const hasBlank = Object.values(this.constraints).some(c => c && !c.class);
+        if (!hasBlank) this.addBlankSlot();
+      },
+      reactToConstraintSelection (event, idx) {
+        const chosen = event.target.value; // 'FromMeshIds' or 'FromPapers'
+        let def = null;
+        if (chosen === 'FromMeshIds') def = { mesh_ids: [] };
+        if (chosen === 'FromPapers')  def = { paper_list: [] };
 
+        this.$set(this.constraints[idx], 'class', chosen);
+        this.$set(this.constraints[idx], 'constraint', def);
+        this.ensureBlankSlot();
+      },
       removeConstraint: function(constraint_idx) {
         this.$delete(this.constraints, constraint_idx)
+        this.ensureBlankSlot();
       },
 
       async searchButton() {
@@ -372,9 +408,9 @@
         return false;
       },
       addAgent () {
-    // reuse existing addConstraint to add another HasAgent
-    this.addConstraint('HasAgent');
-  }
+        // reuse existing addConstraint to add another HasAgent
+        this.addConstraint('HasAgent');
+      }
     },
     computed: {
       empty_relations: function() {
@@ -398,19 +434,18 @@
     return Object.keys(this.constraints)
       .map(k => ({ idx: Number(k), c: this.constraints[k] }))
       .filter(pair => pair.c && pair.c.class === 'HasAgent');
-  },
+      },
 
-  nonAgentConstraints () {
-    return Object.keys(this.constraints)
-      .map(k => ({ idx: Number(k), c: this.constraints[k] }))
-      .filter(pair => pair.c && pair.c.class !== 'HasAgent');
-  },
+      nonAgentConstraints () {
+        return Object.keys(this.constraints)
+          .map(k => ({ idx: Number(k), c: this.constraints[k] }))
+          .filter(pair => pair.c && pair.c.class !== 'HasAgent');
+      },
     },
     created() {
       this.addConstraint('HasAgent');
       this.addConstraint('HasType');
-      this.addConstraint('FromMeshIds');
-      this.addConstraint('FromPapers');
+      this.ensureBlankSlot();
     },
     mixins: [piecemeal_mixin]
   }
