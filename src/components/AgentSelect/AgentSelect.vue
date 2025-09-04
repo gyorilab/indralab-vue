@@ -30,7 +30,7 @@
 
       <span class="sep">OR</span>
       <button class="agent-select-button btn btn-primary" @click="lookupOptions">
-        Find Identifier with GILDA
+        Find Identifier with Gilda
       </button>
       <span v-show="searching">Searching...</span>
       <span v-show="options_empty">No groundings found...</span>
@@ -51,7 +51,7 @@
 
     <span v-else>
       <span class="label">GILDA grounding:</span>
-      <select class="form-control" v-model="selected_option_idx">
+      <select class="form-control gilda-dropdown" v-model="selected_option_idx">
         <option :value="-1" selected disabled hidden>Select grounding option...</option>
         <option
           v-for="(option, option_idx) in options"
@@ -182,17 +182,16 @@ export default {
 .agent-select select.form-control,
 .agent-select input.form-control {
   display: inline-block;
+  width: 200px;
 }
 
 .agent-select select.form-control {
   width: 80px;            /* role dropdown */
 }
 
-.agent-select input.form-control {
-  width: 200px;            /* agent input */
-  max-width: 60vw;
+.agent-select .gilda-dropdown {
+  min-width: 350px;
 }
-
 .agent-select .btn { margin-left: 6px; }
 
 /* optional: keep the hint + "OR" on same line */

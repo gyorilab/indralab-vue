@@ -8,7 +8,7 @@
         OR
         <button class="agent-select-button btn btn-primary"
                 @click='lookupOptions'>
-            Find Identifier with GILDA
+            Find Identifier with Gilda
         </button>
         <span v-show='searching'>Searching...</span>
         <span v-show='options_empty'>No mesh IDs found...</span>

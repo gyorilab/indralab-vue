@@ -2,9 +2,10 @@
   <div class='relation-search nvm'
        :style="`cursor: ${(searching) ? 'progress': 'auto'};`">
     <div id="search-row">
+      <small class="text-muted">On this page, you can search for statements by specifying one or more constraints such as agent, statement type, MeSH term, or paper. By default, a single agent search box is shown. You can add a second agent using the “+ Add agent” button, or remove it with the red “×” button. Additional constraint types (type, MeSH, paper) are always available below. After filling in your desired constraints, click the “Search” button to retrieve statements that match your criteria.</small>
       <div class="nav-btn">
         <h4>
-          Query Constraints (TESTING)
+          Statement Searching (Development)
           <button class="btn"
                   :disabled="cannotGoBack"
                   @click="backButton">
@@ -44,7 +45,7 @@
         <button
           class="btn btn-sm btn-outline-primary"
           @click="addAgent"
-          :disabled="hasAgentConstraints.length >= 2"
+          :disabled="hasAgentConstraints.length >= 3"
         >
           + Add agent
         </button>
@@ -57,7 +58,7 @@
         :key="pair.idx"
       >
         <template v-if="pair.c.class === 'HasType'">
-          <b>Type:</b>
+          <b>Statement Relation Types:</b>
           <type-select v-model="pair.c.constraint"></type-select>
           <br>
         </template>
@@ -148,7 +149,7 @@
       addConstraint(constraint_class) {
           let def = null;
           if (constraint_class === 'HasAgent') {
-            def = { role: 'any' };               // ← keep it minimal
+            def = { role: 'any' };
           } else if (constraint_class === 'HasType') {
             def = { stmt_types: [] };
           } else if (constraint_class === 'FromMeshIds') {
