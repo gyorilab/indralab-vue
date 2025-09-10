@@ -2,7 +2,6 @@
   <div class='relation-search nvm'
        :style="`cursor: ${(searching) ? 'progress': 'auto'};`">
     <div id="search-row">
-      <small class="text-muted">On this page, you can search for statements by specifying one or more constraints such as agent, statement type, MeSH term, or paper. By default, a single agent search box is shown. You can add a second agent using the “+ Add agent” button, or remove it with the red “×” button. Additional constraint types (type, MeSH, paper) are always available below. After filling in your desired constraints, click the “Search” button to retrieve statements that match your criteria.</small>
       <div class="nav-btn">
         <h4>
           Statement Searching (Testing)
@@ -26,7 +25,7 @@
           :key="pair.idx"
         >
           <b>Agent {{ i + 1 }}:</b>
-          <agent-select v-model="pair.c.constraint"></agent-select>
+          <agent-select v-model="pair.c.constraint" :example-tick="exampleTick"></agent-select>
 
           <!-- red remove on Agent 2+ only -->
           <button
@@ -166,6 +165,8 @@
         search_history: [],
         history_idx: -1,
         complexes_covered: null,
+
+        exampleTick: 0
       }
     },
     methods: {
@@ -195,6 +196,42 @@
       ensureBlankSlot () {
         const hasBlank = Object.values(this.constraints).some(c => c && !c.class);
         if (!hasBlank) this.addBlankSlot();
+      },
+      applyExample ({ agent1, role1 = 'any', agent2, role2 = 'any', stmtType }) {
+        this.constraints = {};
+        this.cidx = 0;
+
+        if (agent1) {
+          this.addConstraint('HasAgent');
+          this.$set(this.constraints, 0, {
+            class: 'HasAgent',
+            inverted: false,
+            constraint: { agent_id: agent1, namespace: 'AUTO', role: role1 }
+          });
+        }
+
+        if (agent2) {
+          this.addConstraint('HasAgent');
+          const idx = agent1 ? 1 : 0;
+          this.$set(this.constraints, idx, {
+            class: 'HasAgent',
+            inverted: false,
+            constraint: { agent_id: agent2, namespace: 'AUTO', role: role2 }
+          });
+        }
+
+        if (stmtType) {
+          this.addConstraint('HasType');
+          const idx = (agent1 ? 1 : 0) + (agent2 ? 1 : 0); // 放在末尾
+          this.$set(this.constraints, idx, {
+            class: 'HasType',
+            inverted: false,
+            constraint: { stmt_types: [stmtType] }
+          });
+        }
+
+        this.ensureBlankSlot?.();
+        this.$nextTick(() => { this.exampleTick++; });
       },
       reactToConstraintSelection (event, idx) {
         const chosen = event.target.value; // 'FromMeshIds' or 'FromPapers'
@@ -447,6 +484,24 @@
       this.addConstraint('HasType');
       this.ensureBlankSlot();
     },
+    mounted() {
+      this._onExample = (e) => {
+      const d = e.detail || {};
+      this.applyExample({
+        agent1: d.agent1,
+        role1:  d.role1 || 'any',
+        agent2: d.agent2,
+        role2:  d.role2 || 'any',
+        stmtType: d.stmtType
+      });
+      };
+      window.addEventListener('indra:example', this._onExample);
+    },
+
+    beforeDestroy() {
+        window.removeEventListener('indra:example', this._onExample);
+    },
+
     mixins: [piecemeal_mixin]
   }
 </script>

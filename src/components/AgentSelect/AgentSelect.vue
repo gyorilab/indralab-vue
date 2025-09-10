@@ -1,7 +1,7 @@
 <template>
   <span class="agent-select">
     <span class="label">role:</span>
-    <select class="form-control" v-model="role_str">
+    <select class="form-control role-dropdown" v-model="role_str">
       <option v-for="role in role_options" :key="role" :value="role">
         {{ role }}
       </option>
@@ -45,8 +45,8 @@
 
     <span v-else-if="options.length === 1">
       <span class="label">GILDA grounding:</span>
-      <span class="form-control" v-html="printOption(options[0])"></span>
-      <button class="btn btn-primary" @click="resetOptions">Cancel</button>
+      <span class="form-control gilda-dropdown" v-html="printOption(options[0])"></span>
+      <button class="agent-select-button btn btn-primary" @click="resetOptions">Cancel</button>
     </span>
 
     <span v-else>
@@ -70,7 +70,7 @@
 <script>
 export default {
   name: 'AgentSelect',
-  props: ['value'],
+  props: ['value','exampleTick'],
   data () {
     return {
       role_str: 'any',
@@ -79,7 +79,7 @@ export default {
       options: null,
       selected_option_idx: -1,
       search_error: null,
-      role_options: ['subject', 'object', 'any']
+      role_options: ['subject', 'object', 'any'],
     }
   },
   methods: {
@@ -164,37 +164,46 @@ export default {
     }
   },
   watch: {
+    exampleTick () {
+    const v = this.value || {};
+    this.agent_str = typeof v.agent_id === 'string' ? v.agent_id : '';
+    this.role_str  = typeof v.role === 'string' ? v.role : 'any';
+    // make sure it does not affect grounding button
+    this.options = null;
+    this.selected_option_idx = -1;
+    this.search_error = null;
+  },
     constraint (c) {
-      this.$emit('input', c)
+    this.$emit('input', c)
     }
   }
 }
 </script>
-
 <style scoped>
-.agent-select {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0.2em;
-}
+  .agent-select {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0.2em;
+  }
 
-.agent-select select.form-control,
-.agent-select input.form-control {
-  display: inline-block;
-  width: 200px;
-}
+  .agent-select .role-dropdown {
+    width: 80px;
+    display: inline-flex;
+  }
 
-.agent-select select.form-control {
-  width: 80px;            /* role dropdown */
-}
+  .agent-select input.form-control {
+    width: 250px;
+    display: inline-flex;
+  }
 
-.agent-select .gilda-dropdown {
-  min-width: 350px;
-}
-.agent-select .btn { margin-left: 6px; }
+  .agent-select .gilda-dropdown {
+    min-width: 250px;
+    width: auto;
+    display: inline-flex;
+  }
 
-/* optional: keep the hint + "OR" on same line */
-.agent-select .hint { margin-left: 6px; white-space: nowrap; color: #666; }
-.agent-select .sep  { margin: 0 8px;   color: #888; }
+  .agent-select .btn {
+    margin-left: 6px;
+  }
 </style>
