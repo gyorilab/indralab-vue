@@ -25,26 +25,50 @@
           :key="pair.idx"
         >
           <b>Agent {{ i + 1 }}:</b>
-          <agent-select v-model="pair.c.constraint" :example-tick="exampleTick"></agent-select>
 
-          <!-- red remove on Agent 2+ only -->
-          <button
-            class="btn btn-sm btn-outline-danger"
-            v-if="hasAgentConstraints.length > 1 && i > 0"
-            @click="removeConstraint(pair.idx)"
-            style="margin-left:6px"
-            title="Remove this agent"
-          >
-            ×
-          </button>
-        </div>
+      <agent-select :key="'agent-'+pair.idx" v-model="pair.c.constraint" :example-tick="exampleTick"></agent-select>
+      <button
+        class="btn btn-sm btn-outline-danger"
+        v-if="i >= 2"
+        @click="removeConstraint(pair.idx)"
+        style="margin-left:6px"
+        title="Remove this agent"
+      >
+        ×
+      </button>
+      </div>
 
-        <button
-          class="btn btn-sm btn-outline-primary"
-          @click="addAgent"
-          :disabled="hasAgentConstraints.length >= 3"
-        >
-          + Add agent
+      <button
+        class="btn btn-sm btn-outline-primary"
+        @click="addAgent"
+        :disabled="hasAgentConstraints.length >= 3"
+      >
+        + Add agent
+      </button>
+      </div>
+
+      <div class="role-presets" style="margin:6px 0 12px 0;">
+        <button type="button"
+                class="btn btn-outline-primary"
+                :class="{ active: currentPreset === 'any-any' }"
+                @click.prevent="presetRoles('any-any')"
+                style="margin-right:8px;">
+          Any ↔ Any
+        </button>
+
+        <button type="button"
+                class="btn btn-outline-primary"
+                :class="{ active: currentPreset === 's-o' }"
+                @click.prevent="presetRoles('s-o')"
+                style="margin-right:8px;">
+          A1: subject → A2: object
+        </button>
+
+        <button type="button"
+                class="btn btn-outline-primary"
+                :class="{ active: currentPreset === 'o-s' }"
+                @click.prevent="presetRoles('o-s')">
+          A2: subject → A1: object
         </button>
       </div>
 
@@ -220,8 +244,8 @@
           });
         }
 
+        this.addConstraint('HasType');
         if (stmtType) {
-          this.addConstraint('HasType');
           const idx = (agent1 ? 1 : 0) + (agent2 ? 1 : 0); // 放在末尾
           this.$set(this.constraints, idx, {
             class: 'HasType',
@@ -447,7 +471,30 @@
       addAgent () {
         // reuse existing addConstraint to add another HasAgent
         this.addConstraint('HasAgent');
-      }
+      },
+      presetRoles(mode) {
+        const agents = this.hasAgentConstraints
+          .sort((a, b) => a.idx - b.idx)
+          .slice(0, 2);
+
+        if (agents.length === 0) return;
+
+        const setRole = (pair, role) => {
+          if (!pair || !pair.c || !pair.c.constraint) return;
+          this.$set(pair.c.constraint, 'role', role);
+        };
+
+        if (mode === 'any-any') {
+          if (agents[0]) setRole(agents[0], 'any');
+          if (agents[1]) setRole(agents[1], 'any');
+        } else if (mode === 's-o') {
+          if (agents[0]) setRole(agents[0], 'subject');
+          if (agents[1]) setRole(agents[1], 'object');
+        } else if (mode === 'o-s') {
+          if (agents[0]) setRole(agents[0], 'object');
+          if (agents[1]) setRole(agents[1], 'subject');
+        }
+      },
     },
     computed: {
       empty_relations: function() {
@@ -478,24 +525,80 @@
           .map(k => ({ idx: Number(k), c: this.constraints[k] }))
           .filter(pair => pair.c && pair.c.class !== 'HasAgent');
       },
+      currentPreset () {
+        const agents = [...this.hasAgentConstraints]
+          .sort((a,b) => a.idx - b.idx)
+          .slice(0,2);
+
+        const roleOf = (i) =>
+          agents[i] && agents[i].c && agents[i].c.constraint
+            ? (agents[i].c.constraint.role || 'any')
+            : 'any';
+
+        const r1 = roleOf(0);
+        const r2 = roleOf(1);
+
+        if (r1 === 'any' && r2 === 'any') return 'any-any';
+        if (r1 === 'subject' && r2 === 'object') return 's-o';
+        if (r1 === 'object' && r2 === 'subject') return 'o-s';
+        return null;
+      }
+
     },
     created() {
+      this.addConstraint('HasAgent');
       this.addConstraint('HasAgent');
       this.addConstraint('HasType');
       this.ensureBlankSlot();
     },
-    mounted() {
-      this._onExample = (e) => {
+   mounted() {
+    this._onExample = (e) => {
       const d = e.detail || {};
-      this.applyExample({
-        agent1: d.agent1,
-        role1:  d.role1 || 'any',
-        agent2: d.agent2,
-        role2:  d.role2 || 'any',
-        stmtType: d.stmtType
-      });
-      };
-      window.addEventListener('indra:example', this._onExample);
+      if (this.hasAgentConstraints.length < 2) {
+        this.addConstraint('HasAgent');
+      }
+
+      // A1/A2 直接写入（保持对象结构）
+      const a1 = this.hasAgentConstraints.sort((a,b)=>a.idx-b.idx)[0];
+      const a2 = this.hasAgentConstraints.sort((a,b)=>a.idx-b.idx)[1];
+
+      if (a1) {
+        this.$set(a1.c, 'constraint', { ...(a1.c.constraint || { role: 'any' }),
+          agent_id: d.agent1 || (a1.c.constraint && a1.c.constraint.agent_id) || '' ,
+          namespace: 'AUTO'
+        });
+      }
+      if (a2) {
+        this.$set(a2.c, 'constraint', { ...(a2.c.constraint || { role: 'any' }),
+          agent_id: d.agent2 || (a2.c.constraint && a2.c.constraint.agent_id) || '' ,
+          namespace: 'AUTO'
+        });
+      }
+
+      // set role setting by role
+      // In exmaple text, use data-preset="s-o" / "o-s" / "any-any"
+      const preset = d.preset || (d.role1 === 'subject' && d.role2 === 'object'
+        ? 's-o'
+        : d.role1 === 'object' && d.role2 === 'subject'
+        ? 'o-s'
+        : 'any-any');
+      this.presetRoles(preset);
+
+      if (d.stmtType) {
+        const typePair = this.nonAgentConstraints.find(p => p.c.class === 'HasType');
+        if (typePair) {
+          this.$set(typePair.c, 'constraint', { stmt_types: [d.stmtType] });
+        } else {
+          this.addConstraint('HasType');
+          const last = Object.keys(this.constraints).map(Number).sort((a,b)=>b-a)[0];
+          this.$set(this.constraints[last], 'constraint', { stmt_types: [d.stmtType] });
+        }
+      }
+
+    this.$nextTick(() => { this.exampleTick++; });
+    };
+
+    window.addEventListener('indra:example', this._onExample);
     },
 
     beforeDestroy() {

@@ -1,11 +1,5 @@
 <template>
   <span class="agent-select">
-    <span class="label">role:</span>
-    <select class="form-control role-dropdown" v-model="role_str">
-      <option v-for="role in role_options" :key="role" :value="role">
-        {{ role }}
-      </option>
-    </select>
 
     <span v-if="!options || options_empty">
       <input
@@ -73,13 +67,11 @@ export default {
   props: ['value','exampleTick'],
   data () {
     return {
-      role_str: 'any',
       agent_str: '',
       searching: false,
       options: null,
       selected_option_idx: -1,
       search_error: null,
-      role_options: ['subject', 'object', 'any'],
     }
   },
   methods: {
@@ -140,42 +132,35 @@ export default {
       if (this.parsedPrefix) return this.parsedPrefix.ns
       return 'AUTO'
     },
-    constraint () {
-      let ret = null
 
-      // Case 1: user selected a GILDA grounding explicitly
+      partialConstraint () {
+      let ret = null;
+
       if (this.options && !this.options_empty && this.selected_option_idx >= 0) {
-        const chosen = this.options[this.selected_option_idx]
-        ret = {
-          agent_id: chosen.term.id,
-          namespace: chosen.term.db
-        }
+        const chosen = this.options[this.selected_option_idx];
+        ret = { agent_id: chosen.term.id, namespace: chosen.term.db };
       } else if (this.agent_id_from_input) {
-        // Case 2: user typed something (possibly with a prefix); no GILDA selection
-        ret = {
-          agent_id: this.agent_id_from_input,
-          namespace: this.namespace_from_input
-        }
+        ret = { agent_id: this.agent_id_from_input, namespace: this.namespace_from_input };
       }
 
-      // Add role if set
-      if (ret && this.role_str !== 'any') ret.role = this.role_str
-      return ret
-    }
+      return ret;
+    },
+
   },
   watch: {
-    exampleTick () {
-    const v = this.value || {};
-    this.agent_str = typeof v.agent_id === 'string' ? v.agent_id : '';
-    this.role_str  = typeof v.role === 'string' ? v.role : 'any';
-    // make sure it does not affect grounding button
-    this.options = null;
-    this.selected_option_idx = -1;
-    this.search_error = null;
-  },
-    constraint (c) {
-    this.$emit('input', c)
-    }
+      exampleTick () {
+      const v = this.value || {};
+      this.agent_str = typeof v.agent_id === 'string' ? v.agent_id : '';
+      this.options = null;
+      this.selected_option_idx = -1;
+      this.search_error = null;
+    },
+      partialConstraint (pc) {
+      if (!pc) return;
+      const base = (this.value && typeof this.value === 'object') ? this.value : {};
+      const merged = { ...base, ...pc };
+      this.$emit('input', merged);
+    },
   }
 }
 </script>
