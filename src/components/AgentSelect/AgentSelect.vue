@@ -6,7 +6,7 @@
         class="form-control"
         type="text"
         v-model="agent_str"
-        placeholder="Enter agent here"
+        placeholder="Enter agent name (e.g. 'MEK', 'FPLX:MEK' or 'hgnc:3321')"
       />
 
       <!-- live hint, replaces the old namespace selector -->
@@ -22,7 +22,6 @@
         </template>
       </small>
 
-      <span class="sep">OR</span>
       <button class="agent-select-button btn btn-primary" @click="lookupOptions">
         Find Identifier with Gilda
       </button>
@@ -178,12 +177,12 @@ export default {
   }
 
   .agent-select input.form-control {
-    width: 250px;
+    width: 450px;
     display: inline-flex;
   }
 
   .agent-select .gilda-dropdown {
-    min-width: 250px;
+    min-width: 450px;
     width: auto;
     display: inline-flex;
   }

@@ -24,9 +24,22 @@
           v-for="(pair, i) in hasAgentConstraints"
           :key="pair.idx"
         >
-          <b>Agent {{ i + 1 }}:</b>
+          <b>{{ i === 0 ? 'Agent' : (i === 1 ? 'Other agent' : 'Third agent') }}</b>
+          <span
+            v-if="i === 0"
+            class="blue-dot role-dot"
+            aria-hidden="true"
+          ></span>
+          <span
+            v-else-if="i === 1"
+            class="orange-dot role-dot"
+            aria-hidden="true"
+          ></span>
 
-      <agent-select :key="'agent-'+pair.idx" v-model="pair.c.constraint" :example-tick="exampleTick"></agent-select>
+      <div>
+        <agent-select :key="'agent-'+pair.idx" v-model="pair.c.constraint" :example-tick="exampleTick"></agent-select>
+      </div>
+
       <button
         class="btn btn-sm btn-outline-danger"
         v-if="i >= 2"
@@ -43,32 +56,34 @@
         @click="addAgent"
         :disabled="hasAgentConstraints.length >= 3"
       >
-        + Add agent
+        + third agent
       </button>
       </div>
 
-      <div class="role-presets" style="margin:6px 0 12px 0;">
+      <b>Agent Role</b>
+      <div class="role-presets">
         <button type="button"
-                class="btn btn-outline-primary"
+                class="btn-role"
                 :class="{ active: currentPreset === 'any-any' }"
-                @click.prevent="presetRoles('any-any')"
-                style="margin-right:8px;">
-          Any ↔ Any
+                @click.prevent="presetRoles('any-any')">
+          <img :src="roleBtn3" />
+          <span class="role-text">Subject/Object</span>
         </button>
 
         <button type="button"
-                class="btn btn-outline-primary"
+                class="btn-role"
                 :class="{ active: currentPreset === 's-o' }"
-                @click.prevent="presetRoles('s-o')"
-                style="margin-right:8px;">
-          A1: subject → A2: object
+                @click.prevent="presetRoles('s-o')">
+          <img :src="roleBtn2" />
+          <span class="role-text">Subject</span>
         </button>
 
         <button type="button"
-                class="btn btn-outline-primary"
+                class="btn-role"
                 :class="{ active: currentPreset === 'o-s' }"
                 @click.prevent="presetRoles('o-s')">
-          A2: subject → A1: object
+          <img :src="roleBtn1" />
+          <span class="role-text">Object</span>
         </button>
       </div>
 
@@ -161,7 +176,9 @@
 
 <script>
   import piecemeal_mixin from "../piecemeal_mixin";
-
+  import roleBtn1 from '@/image/role_button1.png'
+  import roleBtn2 from '@/image/role_button2.png'
+  import roleBtn3 from '@/image/role_button3.png'
   export default {
     name: "RelationSearch",
     props: {
@@ -190,14 +207,17 @@
         history_idx: -1,
         complexes_covered: null,
 
-        exampleTick: 0
+        exampleTick: 0,
+        roleBtn1,
+        roleBtn2,
+        roleBtn3,
       }
     },
     methods: {
       addConstraint (constraint_class) {
         // used when you pre-add Agent/Type at created()
         let def = null;
-        if (constraint_class === 'HasAgent')    def = { role: 'any' };
+        if (constraint_class === 'HasAgent')    def = {};
         else if (constraint_class === 'HasType') def = { stmt_types: [] };
         else if (constraint_class === 'FromMeshIds') def = { mesh_ids: [] };
         else if (constraint_class === 'FromPapers')  def = { paper_list: [] };
@@ -221,42 +241,7 @@
         const hasBlank = Object.values(this.constraints).some(c => c && !c.class);
         if (!hasBlank) this.addBlankSlot();
       },
-      applyExample ({ agent1, role1 = 'any', agent2, role2 = 'any', stmtType }) {
-        this.constraints = {};
-        this.cidx = 0;
 
-        if (agent1) {
-          this.addConstraint('HasAgent');
-          this.$set(this.constraints, 0, {
-            class: 'HasAgent',
-            inverted: false,
-            constraint: { agent_id: agent1, namespace: 'AUTO', role: role1 }
-          });
-        }
-
-        if (agent2) {
-          this.addConstraint('HasAgent');
-          const idx = agent1 ? 1 : 0;
-          this.$set(this.constraints, idx, {
-            class: 'HasAgent',
-            inverted: false,
-            constraint: { agent_id: agent2, namespace: 'AUTO', role: role2 }
-          });
-        }
-
-        this.addConstraint('HasType');
-        if (stmtType) {
-          const idx = (agent1 ? 1 : 0) + (agent2 ? 1 : 0); // 放在末尾
-          this.$set(this.constraints, idx, {
-            class: 'HasType',
-            inverted: false,
-            constraint: { stmt_types: [stmtType] }
-          });
-        }
-
-        this.ensureBlankSlot?.();
-        this.$nextTick(() => { this.exampleTick++; });
-      },
       reactToConstraintSelection (event, idx) {
         const chosen = event.target.value; // 'FromMeshIds' or 'FromPapers'
         let def = null;
@@ -485,8 +470,8 @@
         };
 
         if (mode === 'any-any') {
-          if (agents[0]) setRole(agents[0], 'any');
-          if (agents[1]) setRole(agents[1], 'any');
+          if (agents[0]) setRole(agents[0]);
+          if (agents[1]) setRole(agents[1]);
         } else if (mode === 's-o') {
           if (agents[0]) setRole(agents[0], 'subject');
           if (agents[1]) setRole(agents[1], 'object');
@@ -563,14 +548,14 @@
       const a2 = this.hasAgentConstraints.sort((a,b)=>a.idx-b.idx)[1];
 
       if (a1) {
-        this.$set(a1.c, 'constraint', { ...(a1.c.constraint || { role: 'any' }),
-          agent_id: d.agent1 || (a1.c.constraint && a1.c.constraint.agent_id) || '' ,
+        this.$set(a1.c, 'constraint', { ...(a1.c.constraint || {}),
+          agent_id: d.agent1 || '' ,
           namespace: 'AUTO'
         });
       }
       if (a2) {
-        this.$set(a2.c, 'constraint', { ...(a2.c.constraint || { role: 'any' }),
-          agent_id: d.agent2 || (a2.c.constraint && a2.c.constraint.agent_id) || '' ,
+        this.$set(a2.c, 'constraint', { ...(a2.c.constraint || {}),
+          agent_id: d.agent2 || '' ,
           namespace: 'AUTO'
         });
       }
@@ -648,4 +633,54 @@
   #result-list {
     margin-top: 10px;
   }
+  .role-presets {
+  display: flex;
+  }
+
+  .btn-role {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 120px;
+    cursor: pointer;
+  }
+
+  .btn-role img {
+    max-width: 90%;
+    max-height: 100%;
+    margin-top: 8px;
+  }
+
+  .role-text {
+    font-size: 12px;
+    margin-top: 4px;
+  }
+
+  .btn-role.active {
+    background-color: #007bff;
+    color: #fff;
+  }
+    .blue-dot {
+      background-color: #6fa8dcff;
+  }
+  .orange-dot {
+
+      background-color: #ff9900ff;
+
+  }
+  .role-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-left: 3px;
+      margin-right: 3px;
+      margin-left: 6px;
+      vertical-align: middle;
+      margin-bottom: 2px;
+  }
+
 </style>
