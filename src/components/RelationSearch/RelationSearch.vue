@@ -598,9 +598,6 @@
   .relation-search {
     cursor: pointer
   }
-  .click {
-    cursor: pointer;
-  }
 
   select, input, button {
     margin: 0.2em;
@@ -612,22 +609,6 @@
   .nav-btn {
     margin-top: auto;
     margin-bottom: auto;
-  }
-
-  .sticky-header {
-    position: sticky;
-    top: 0;
-    background-color: white;
-    z-index: 10;
-    padding: 5px 20px 0 20px;
-    margin-left: -20px;
-    margin-right: -20px;
-  }
-
-  #src-disp-hr {
-    padding-right: 20px;
-    padding-left: 20px;
-    margin-bottom: 0;
   }
 
   #result-list {
@@ -646,12 +627,13 @@
     justify-content: center;
     width: 120px;
     cursor: pointer;
+    border-radius: 6px;
   }
 
   .btn-role img {
-    max-width: 90%;
+    max-width: 95%;
     max-height: 100%;
-    margin-top: 8px;
+    margin-top: 6px;
   }
 
   .role-text {
@@ -676,7 +658,6 @@
       height: 14px;
       border-radius: 50%;
       display: inline-block;
-      margin-left: 3px;
       margin-right: 3px;
       margin-left: 6px;
       vertical-align: middle;
