@@ -22,7 +22,7 @@
         <div
           class="agent-block"
           v-for="(pair, i) in hasAgentConstraints"
-          :key="pair.idx"
+          :key="pair.idx" style="display:flex; align-items:center;"
         >
           <b>{{ i === 0 ? 'Agent' : (i === 1 ? 'Other agent' : 'Third agent') }}</b>
           <span
@@ -569,15 +569,18 @@
         : 'any-any');
       this.presetRoles(preset);
 
+      const typePair = this.nonAgentConstraints.find(p => p.c.class === 'HasType');
+
       if (d.stmtType) {
-        const typePair = this.nonAgentConstraints.find(p => p.c.class === 'HasType');
         if (typePair) {
           this.$set(typePair.c, 'constraint', { stmt_types: [d.stmtType] });
         } else {
           this.addConstraint('HasType');
-          const last = Object.keys(this.constraints).map(Number).sort((a,b)=>b-a)[0];
+          const last = Math.max(...Object.keys(this.constraints).map(Number));
           this.$set(this.constraints[last], 'constraint', { stmt_types: [d.stmtType] });
         }
+      } else if (typePair) {
+        this.$set(typePair.c, 'constraint', { stmt_types: [] });
       }
 
     this.$nextTick(() => { this.exampleTick++; });
