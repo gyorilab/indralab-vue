@@ -96,11 +96,11 @@
         <span class="spaced">More filters:</span>
         <select class="form-control"
                 @input="reactToConstraintSelection($event, pair.idx)">
-          <option :value="null" selected hidden>select constraint...</option>
+          <option :value="null" selected hidden>select filters...</option>
           <option v-for="(type_val, type_name) in constraint_classes"
                   :key="type_name"
                   :value="type_val">
-            {{ type_name }} constraint
+             Filter by {{ type_name === 'mesh' ? (type_name + ' ID') : type_name }}
           </option>
         </select>
       </span>
@@ -108,7 +108,7 @@
       <!-- filled constraint (non-agent only) -->
       <span v-else>
         <span v-if="pair.c.class === 'HasType'">
-          <b>Statement Relation Types:</b>
+          <b>Relation Types:</b>
           <type-select v-model="pair.c.constraint"></type-select>
         </span>
 
