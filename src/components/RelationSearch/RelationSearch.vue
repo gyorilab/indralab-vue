@@ -489,7 +489,7 @@
        getSortedAgentPairs() {
          return this.hasAgentConstraints
            .sort((a,b) => a.idx - b.idx)
-           .slice(0, 2); // 只要前两个
+           .slice(0, 2);
        },
        _parseAgentToken(s) {
         if (!s) return { ns: 'AUTO', id: '' };
@@ -499,7 +499,7 @@
         }
         return { ns: 'AUTO', id: String(s).trim() };
        },
-            async copyLink() {
+       async copyLink() {
           const text = this.shareUrl || window.location.href;
           try {
             if (navigator.clipboard && window.isSecureContext) {
@@ -521,7 +521,6 @@
            const a = pair.c?.constraint || {};
            if (!a.agent_id) return;
            const display = (this.displayTextMap[pair.idx] || '').trim();
-           // 优先用“显示名”；没有就回退到 ns:id 或 id
            const token = display || ((a.namespace && a.namespace !== 'AUTO')
              ? `${String(a.namespace).toLowerCase()}:${a.agent_id}`
              : a.agent_id);
@@ -623,7 +622,6 @@
           .map(s => s.trim())
           .filter(Boolean)
           .map(tok => {
-            // 支持 "123@pmid" 或 "pmid:123"，默认 pmid
             if (tok.includes('@')) {
               const [pid, it] = tok.split('@');
               return [it.toLowerCase(), pid];
@@ -730,7 +728,6 @@
         this.addConstraint('HasAgent');
       }
 
-      // A1/A2 直接写入（保持对象结构）
       const a1 = this.hasAgentConstraints.sort((a,b)=>a.idx-b.idx)[0];
       const a2 = this.hasAgentConstraints.sort((a,b)=>a.idx-b.idx)[1];
 
