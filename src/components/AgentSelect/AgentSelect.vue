@@ -87,6 +87,12 @@ export default {
     }
   },
   computed: {
+    displayText () {
+     if (this.options && !this.options_empty && this.selected_option_idx >= 0) {
+       return this.options[this.selected_option_idx].term.entry_name;
+     }
+     return (this.agent_str || '').trim();
+   },
     options_empty () {
       if (!this.options) return false
       return this.options.length === 0
@@ -141,9 +147,15 @@ export default {
 
   },
   watch: {
-      exampleTick () {
+    exampleTick () {
       const v = this.value || {};
-      this.agent_str = typeof v.agent_id === 'string' ? v.agent_id : '';
+      const ns = typeof v.namespace === 'string' ? v.namespace.toUpperCase() : null;
+      const id = typeof v.agent_id === 'string' ? v.agent_id : '';
+      if (ns && id && ns !== 'AUTO') {
+        this.agent_str = `${ns.toLowerCase()}:${id}`;
+      } else {
+        this.agent_str = id;
+      }
       this.options = null;
       this.selected_option_idx = -1;
       this.search_error = null;
@@ -153,6 +165,7 @@ export default {
       const base = (this.value && typeof this.value === 'object') ? this.value : {};
       const merged = { ...base, ...pc };
       this.$emit('input', merged);
+      this.$emit('display', this.displayText);
     },
   }
 }

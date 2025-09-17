@@ -24,7 +24,7 @@
           v-for="(pair, i) in hasAgentConstraints"
           :key="pair.idx" style="display:flex; align-items:center;"
         >
-          <b>{{ i === 0 ? 'Agent' : (i === 1 ? 'Other agent' : 'Third agent') }}</b>
+          <b>{{ i === 0 ? 'Agent' : 'Other agent' }}</b>
           <span
             v-if="i === 0"
             class="blue-dot role-dot"
@@ -37,8 +37,12 @@
           ></span>
 
       <div>
-        <agent-select :key="'agent-'+pair.idx" v-model="pair.c.constraint" :example-tick="exampleTick"></agent-select>
-      </div>
+ <agent-select
+   :key="'agent-'+pair.idx"
+   v-model="pair.c.constraint"
+   :example-tick="exampleTick"
+   @display="setDisplay(pair.idx, $event)"
+ ></agent-select>      </div>
 
       <button
         class="btn btn-sm btn-outline-danger"
@@ -50,14 +54,6 @@
         ×
       </button>
       </div>
-
-      <button
-        class="btn btn-sm btn-outline-primary"
-        @click="addAgent"
-        :disabled="hasAgentConstraints.length >= 3"
-      >
-        + third agent
-      </button>
       </div>
 
       <b>Agent Role</b>
@@ -143,10 +139,16 @@
 
         <div>
           <button class="btn btn-primary"
-                  @click="searchButton"
-                  :disabled="searching">
-            Search
-          </button>
+                @click="searchButton"
+                :disabled="searching">
+          Search
+        </button>
+         <button v-if="lastSearchOk"
+                 class="btn btn-outline-secondary"
+                 style="margin-left:6px"
+                 @click="copyLink">
+           Copy Link
+         </button>
         </div>
       </div>
     </div>
@@ -211,6 +213,9 @@
         roleBtn1,
         roleBtn2,
         roleBtn3,
+        shareUrl: "",
+        lastSearchOk: false,
+        displayTextMap: {},
       }
     },
     methods: {
@@ -263,6 +268,8 @@
           alert('Please enter at least one constraint.');
           return;
         }
+        this.lastSearchOk = false;
+        this.shareUrl = "";
         this.next_offset = 0;
         this.agent_pairs = null;
         this.complexes_covered = null;
@@ -382,11 +389,10 @@
         this.next_offset = resp_json.next_offset;
         this.complexes_covered = resp_json.complexes_covered;
 
-        // Decide whether to close the search box or not.
-        if (this.agent_pairs.length > 0)
-          this.show_search = false;
-
         this.searching = false;
+
+        this.updateShareUrl();
+        this.lastSearchOk = true;
         return true;
       },
 
@@ -453,10 +459,6 @@
 
         return false;
       },
-      addAgent () {
-        // reuse existing addConstraint to add another HasAgent
-        this.addConstraint('HasAgent');
-      },
       presetRoles(mode) {
         const agents = this.hasAgentConstraints
           .sort((a, b) => a.idx - b.idx)
@@ -480,6 +482,186 @@
           if (agents[1]) setRole(agents[1], 'subject');
         }
       },
+       setDisplay(idx, text) {
+       this.$set(this.displayTextMap, idx, (text || '').trim());
+        },
+
+       getSortedAgentPairs() {
+         return this.hasAgentConstraints
+           .sort((a,b) => a.idx - b.idx)
+           .slice(0, 2); // 只要前两个
+       },
+       _parseAgentToken(s) {
+        if (!s) return { ns: 'AUTO', id: '' };
+        const m = String(s).trim().match(/^(?<ns>[^:：\s]+)\s*[:：]\s*(?<id>.+)$/);
+        if (m && m.groups) {
+          return { ns: m.groups.ns.toUpperCase(), id: m.groups.id.trim() };
+        }
+        return { ns: 'AUTO', id: String(s).trim() };
+       },
+            async copyLink() {
+          const text = this.shareUrl || window.location.href;
+          try {
+            if (navigator.clipboard && window.isSecureContext) {
+              await navigator.clipboard.writeText(text);
+              alert('Link copied:\n' + text);
+            } else {
+              throw new Error('no clipboard');
+            }
+          } catch {
+            prompt('Copy this link:', text);
+          }
+        },
+
+      buildReadableParams() {
+        const params = new URLSearchParams();
+        const names = ['agent','other_agent'];
+          const pairs = this.getSortedAgentPairs();
+         pairs.forEach((pair, i) => {
+           const a = pair.c?.constraint || {};
+           if (!a.agent_id) return;
+           const display = (this.displayTextMap[pair.idx] || '').trim();
+           // 优先用“显示名”；没有就回退到 ns:id 或 id
+           const token = display || ((a.namespace && a.namespace !== 'AUTO')
+             ? `${String(a.namespace).toLowerCase()}:${a.agent_id}`
+             : a.agent_id);
+           params.set(names[i], token);
+           if (a.role && a.role !== 'any') params.set(`role${i+1}`, a.role);
+         });
+
+        const typePair = this.nonAgentConstraints.find(p => p.c.class === 'HasType');
+        const stmtTypes = typePair?.c?.constraint?.stmt_types || [];
+        if (stmtTypes.length) params.set('rel', stmtTypes.join(','));
+
+        const meshPair = this.nonAgentConstraints.find(p => p.c.class === 'FromMeshIds');
+        const meshIds = meshPair?.c?.constraint?.mesh_ids || [];
+        if (meshIds.length) params.set('mesh', meshIds.join(','));
+
+        const paperPair = this.nonAgentConstraints.find(p => p.c.class === 'FromPapers');
+        const paperList = paperPair?.c?.constraint?.paper_list || [];
+        if (paperList.length) {
+          const items = paperList.map(([id_type, paper_id]) => `${paper_id}@${id_type}`);
+          params.set('papers', items.join(','));
+        }
+
+        params.set('autosearch', '1');
+        return params;
+      },
+
+      updateShareUrl() {
+        const params = this.buildReadableParams();
+        const url = new URL(window.location.href);
+        url.search = params.toString();
+        history.replaceState(null, '', url.toString());
+        this.shareUrl = url.toString();
+      },
+
+      applyReadableParams(params) {
+        this.constraints = {};
+        this.cidx = 0;
+
+        this.addConstraint('HasAgent');
+        this.addConstraint('HasAgent');
+        this.addConstraint('HasType');
+
+        const [a1, a2] = this.hasAgentConstraints
+          .sort((x, y) => x.idx - y.idx)
+          .slice(0, 2);
+       const raw1 = params.get('agent') || '';
+       const raw2 = params.get('other_agent') || '';
+        // 3) fill Agent
+       const t1 = this._parseAgentToken(raw1);
+       const t2 = this._parseAgentToken(raw2);
+
+      if (a1 && t1.id) {
+        this.$set(a1.c, 'constraint', {
+          ...(a1.c.constraint || {}),
+          agent_id: t1.id,
+          namespace: t1.ns,
+        });
+        this.$set(this.displayTextMap, a1.idx, raw1);
+      }
+      if (a2 && t2.id) {
+        this.$set(a2.c, 'constraint', {
+          ...(a2.c.constraint || {}),
+          agent_id: t2.id,
+          namespace: t2.ns,
+        });
+        this.$set(this.displayTextMap, a2.idx, raw2);
+      }
+
+
+      //role
+      const role1 = params.get('role1');
+      const role2 = params.get('role2');
+      if (a1 && role1 && role1 !== 'any') this.$set(a1.c.constraint, 'role', role1);
+      if (a2 && role2 && role2 !== 'any') this.$set(a2.c.constraint, 'role', role2);
+
+      //rel
+      const rel = params.get('rel');
+      if (rel) {
+        const arr = rel.split(',').map(s => s.trim()).filter(Boolean);
+        const typePair = this.nonAgentConstraints.find(p => p.c.class === 'HasType');
+        if (typePair) this.$set(typePair.c, 'constraint', { stmt_types: arr });
+      }
+
+      //MeSH
+      const mesh = params.get('mesh');
+      if (mesh) {
+        this.addConstraint('FromMeshIds');
+        const arr = mesh.split(',').map(s => s.trim()).filter(Boolean);
+        const m = this.nonAgentConstraints.find(p => p.c.class === 'FromMeshIds');
+        this.$set(m.c, 'constraint', { mesh_ids: arr });
+      }
+
+      //Papers
+      const papers = params.get('papers');
+      if (papers) {
+        this.addConstraint('FromPapers');
+        const arr = papers
+          .split(',')
+          .map(s => s.trim())
+          .filter(Boolean)
+          .map(tok => {
+            // 支持 "123@pmid" 或 "pmid:123"，默认 pmid
+            if (tok.includes('@')) {
+              const [pid, it] = tok.split('@');
+              return [it.toLowerCase(), pid];
+            }
+            if (tok.includes(':')) {
+              const [it, pid] = tok.split(':');
+              return [it.toLowerCase(), pid];
+            }
+            return ['pmid', tok];
+          });
+        const p = this.nonAgentConstraints.find(p => p.c.class === 'FromPapers');
+        this.$set(p.c, 'constraint', { paper_list: arr });
+      }
+
+      this.$nextTick(() => { this.exampleTick++; });
+      this.ensureBlankSlot();
+    },
+
+    async applyUrlParamsAndSearch() {
+      const params = new URLSearchParams(window.location.search);
+      const hasReadable =
+        params.get('agent') || params.get('other_agent') ||
+        params.get('rel') || params.get('mesh') || params.get('papers');
+
+      const autosearch = params.get('autosearch') === '1';
+
+      if (hasReadable) {
+        this.applyReadableParams(params);
+      } else {
+        return;
+      }
+
+      if (autosearch) {
+        this.next_offset = 0;
+        this.agent_pairs = null;
+        await this.search();
+      }
+    },
     },
     computed: {
       empty_relations: function() {
@@ -497,12 +679,12 @@
       },
 
       cannotGoForward: function() {
-       return this.history_idx >= (this.search_history.length - 1);
+        return this.history_idx >= (this.search_history.length - 1);
       },
       hasAgentConstraints () {
-    return Object.keys(this.constraints)
-      .map(k => ({ idx: Number(k), c: this.constraints[k] }))
-      .filter(pair => pair.c && pair.c.class === 'HasAgent');
+        return Object.keys(this.constraints)
+          .map(k => ({ idx: Number(k), c: this.constraints[k] }))
+          .filter(pair => pair.c && pair.c.class === 'HasAgent');
       },
 
       nonAgentConstraints () {
@@ -513,7 +695,7 @@
       currentPreset () {
         const agents = [...this.hasAgentConstraints]
           .sort((a,b) => a.idx - b.idx)
-          .slice(0,2);
+          .slice(0, 2);
 
         const roleOf = (i) =>
           agents[i] && agents[i].c && agents[i].c.constraint
@@ -522,12 +704,15 @@
 
         const r1 = roleOf(0);
         const r2 = roleOf(1);
-
-        if (r1 === 'any' && r2 === 'any') return 'any-any';
         if (r1 === 'subject' && r2 === 'object') return 's-o';
         if (r1 === 'object' && r2 === 'subject') return 'o-s';
-        return null;
-      }
+        if (r1 === 'subject' && (r2 === 'any')) return 's-o';
+        if (r1 === 'object' && (r2 === 'any')) return 'o-s';
+        if (r1 === 'any' && r2 === 'subject') return 'o-s';
+        if (r1 === 'any' && r2 === 'object') return 's-o';
+        if (r1 === 'any' && r2 === 'any') return 'any-any';
+        return 'any-any';
+    }
 
     },
     created() {
@@ -537,6 +722,8 @@
       this.ensureBlankSlot();
     },
    mounted() {
+      this.applyUrlParamsAndSearch();
+
     this._onExample = (e) => {
       const d = e.detail || {};
       if (this.hasAgentConstraints.length < 2) {

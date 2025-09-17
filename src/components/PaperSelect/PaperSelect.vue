@@ -18,7 +18,7 @@
     props: ['value'],
     data: function() {
       return {
-        selected_paper: null,
+        selected_paper: '',
         id_types: ['pmid', 'pmcid', 'doi', 'trid', 'tcid'],
         id_type: 'pmid',
       }
@@ -31,9 +31,25 @@
       }
     },
     watch: {
-      constraint: function(constraint) {
-        this.$emit('input', constraint);
-      }
+      value: {
+       handler(v) {
+         const pair = Array.isArray(v?.paper_list) && v.paper_list[0];
+         if (pair) {
+           const [type, id] = pair;
+           this.suppressEmitOnce = true;
+           this.id_type = type || 'pmid';
+           this.selected_paper = id || '';
+           this.$nextTick(() => { this.suppressEmitOnce = false; });
+         }
+       },
+       deep: true,
+       immediate: true,
+     },
+
+     constraint(constraint) {
+       if (this.suppressEmitOnce) return;
+       this.$emit('input', constraint);
+     },
     }
   }
 </script>

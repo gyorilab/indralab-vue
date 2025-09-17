@@ -112,6 +112,21 @@
       }
     },
     watch: {
+      value: {
+      immediate: true,
+      deep: true,
+      handler(v) {
+        const ids = v && Array.isArray(v.mesh_ids) ? v.mesh_ids : [];
+        if (ids.length > 0) {
+          const first = String(ids[0]);
+          if (first !== this.mesh_str) this.mesh_str = first;
+          this.options = null;
+          this.selected_option_idx = -1;
+          this.search_error = null;
+        }
+      }
+      },
+
       constraint: function(constraint) {
         this.$emit('input', constraint);
       }
