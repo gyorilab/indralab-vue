@@ -15,7 +15,7 @@
   </div>
 
   <button class="agent-select-button btn btn-primary" @click="lookupOptions">
-    Find Identifier with Gilda
+    Find Identifier
   </button>
   <span v-show="searching">Searching...</span>
   <span v-show="options_empty">No groundings found...</span>

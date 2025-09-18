@@ -5,10 +5,9 @@
                type="text"
                v-model="mesh_str"
                placeholder="Enter mesh ID/term...">
-        OR
         <button class="agent-select-button btn btn-primary"
                 @click='lookupOptions'>
-            Find Identifier with Gilda
+            Find Identifiers
         </button>
         <span v-show='searching'>Searching...</span>
         <span v-show='options_empty'>No mesh IDs found...</span>
@@ -47,7 +46,7 @@
 <script>
   export default {
     name: "MeshSelect",
-    props: ['value'],
+    props: ['value', 'exampleTick'],
     data: function() {
       return {
         mesh_str: '',
@@ -55,13 +54,14 @@
         options: null,
         selected_option_idx: -1,
         search_error: null,
+        suppressEmitOnce: false,
       }
     },
     methods: {
       lookupOptions: async function() {
         this.searching = true;
         if (!this.mesh_str) {
-          alert("Please enter an mesh term...");
+          alert("Please enter a mesh term...");
           this.searching=false;
           return;
         }
@@ -70,14 +70,9 @@
           {method: 'GET'}
         );
         if (resp.status === 200) {
-          let options = await resp.json();
-          let mesh_options = [];
-          for (let option_dict of options)
-            if (option_dict.term.db === 'MESH')
-              mesh_options.push(option_dict);
-          this.options = mesh_options;
-          if (this.options.length === 1)
-            this.selected_option_idx = 0;
+          const options = await resp.json();
+          this.options = options.filter(o => o.term?.db === 'MESH');
+          if (this.options.length === 1) this.selected_option_idx = 0;
           this.search_error = null;
         } else {
           this.search_error = `(${resp.status}) ${resp.statusText}`
@@ -103,32 +98,30 @@
       },
       constraint: function() {
         let ret = null;
-        if (this.mesh_str)
-          if (!this.options)
-            ret = {mesh_ids: [this.mesh_str]};
-          else if (this.selected_option_idx >= 0)
-            ret = {mesh_ids: [this.options[this.selected_option_idx].term.id]};
+        if (this.mesh_str && !this.options) {
+          ret = { mesh_ids: [this.mesh_str] };
+        } else if (this.options && this.selected_option_idx >= 0) {
+          ret = { mesh_ids: [this.options[this.selected_option_idx].term.id] };
+        }
         return ret;
       }
     },
     watch: {
-      value: {
-      immediate: true,
-      deep: true,
-      handler(v) {
-        const ids = v && Array.isArray(v.mesh_ids) ? v.mesh_ids : [];
-        if (ids.length > 0) {
-          const first = String(ids[0]);
-          if (first !== this.mesh_str) this.mesh_str = first;
-          this.options = null;
-          this.selected_option_idx = -1;
-          this.search_error = null;
-        }
-      }
+      exampleTick() {
+        const v = this.value || {};
+        const ids = Array.isArray(v.mesh_ids) ? v.mesh_ids : [];
+        this.suppressEmitOnce = true;
+        this.mesh_str = ids[0] || '';
+        this.options = null;
+        this.selected_option_idx = -1;
+        this.search_error = null;
       },
-
-      constraint: function(constraint) {
-        this.$emit('input', constraint);
+      constraint(newVal) {
+        if (!newVal) return;
+        if (this.suppressEmitOnce) { this.suppressEmitOnce = false; return; }
+        const base = (this.value && typeof this.value === 'object') ? this.value : {};
+        const merged = { ...base, ...newVal };
+        this.$emit('input', merged);
       }
     }
   }

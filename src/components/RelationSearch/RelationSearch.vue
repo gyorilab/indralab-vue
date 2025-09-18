@@ -110,13 +110,7 @@
 
         <span v-else-if="pair.c.class === 'FromMeshIds'">
           <b>MeSH:</b>
-          <mesh-select v-model="pair.c.constraint"></mesh-select>
-          <button
-            class="btn btn-sm btn-outline-danger"
-            @click="removeConstraint(pair.idx)"
-            style="margin-left:6px"
-            title="Remove MeSH constraint"
-          >×</button>
+          <mesh-select v-model="pair.c.constraint" :example-tick="exampleTick"></mesh-select>
         </span>
 
         <span v-else-if="pair.c.class === 'FromPapers'">
@@ -195,7 +189,6 @@
         constraints: {},
         cidx: 0,
         constraint_classes: {
-          mesh: 'FromMeshIds',
           paper: 'FromPapers'
         },
         context_queries: null,
@@ -562,6 +555,7 @@
         this.addConstraint('HasAgent');
         this.addConstraint('HasAgent');
         this.addConstraint('HasType');
+        this.addConstraint('FromMeshIds');
 
         const [a1, a2] = this.hasAgentConstraints
           .sort((x, y) => x.idx - y.idx)
@@ -607,7 +601,6 @@
       //MeSH
       const mesh = params.get('mesh');
       if (mesh) {
-        this.addConstraint('FromMeshIds');
         const arr = mesh.split(',').map(s => s.trim()).filter(Boolean);
         const m = this.nonAgentConstraints.find(p => p.c.class === 'FromMeshIds');
         this.$set(m.c, 'constraint', { mesh_ids: arr });
@@ -717,6 +710,7 @@
       this.addConstraint('HasAgent');
       this.addConstraint('HasAgent');
       this.addConstraint('HasType');
+      this.addConstraint('FromMeshIds');
       this.ensureBlankSlot();
     },
    mounted() {
