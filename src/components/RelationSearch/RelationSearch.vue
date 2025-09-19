@@ -4,7 +4,7 @@
     <div id="search-row">
       <div class="nav-btn">
         <h4>
-          Statement Searching (Testing)
+          Statement Search
           <button class="btn"
                   :disabled="cannotGoBack"
                   @click="backButton">
