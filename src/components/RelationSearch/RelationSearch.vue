@@ -109,7 +109,7 @@
         </span>
 
         <span v-else-if="pair.c.class === 'FromMeshIds'">
-          <b>MeSH:</b>
+          <b>Content Filter(MeSH/ID):</b>
           <mesh-select v-model="pair.c.constraint" :example-tick="exampleTick"></mesh-select>
         </span>
 

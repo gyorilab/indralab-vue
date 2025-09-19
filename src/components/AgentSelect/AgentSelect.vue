@@ -14,8 +14,13 @@
     </span>
   </div>
 
-  <button class="agent-select-button btn btn-primary" @click="lookupOptions">
-    Find Identifier
+  <button class="btn btn-primary btn-with-tooltip" @click="lookupOptions">
+      Find Identifiers
+      <span class="info-icon">?</span>
+      <div class="tooltip-box">
+        Use this button to ground the name with
+        <a href="https://grounding.indra.bio/" target="_blank">Gilda</a>.
+      </div>
   </button>
   <span v-show="searching">Searching...</span>
   <span v-show="options_empty">No groundings found...</span>
@@ -213,5 +218,35 @@ export default {
     pointer-events: none;
     background: #fff;
     padding-left: 6px;
+  }
+
+  .btn-with-tooltip{ position:relative; padding-right:34px; overflow:visible; }
+  .btn-with-tooltip, .btn-with-tooltip .info-icon{ cursor:pointer; }
+
+
+  .btn-with-tooltip .info-icon{
+    position:absolute; right:8px; top:50%; transform:translateY(-50%);
+    width:18px; height:18px; border-radius:50%;
+    background:#007bff; color:#fff; font:700 12px/18px sans-serif; text-align:center;
+    border:1px solid rgba(0,0,0,.15);
+  }
+
+  /* bubble  hover area*/
+  .btn-with-tooltip .info-icon::after{
+    content:""; position:absolute; left:100%; top:-8px; bottom:-8px; width:32px;
+  }
+
+
+  .btn-with-tooltip .tooltip-box{
+    position:absolute; left:calc(100% + 8px); top:50%; transform:translateY(-50%);
+    min-width:240px; background:#f8f9fa; color:#333;
+    border:1px solid #ddd; border-radius:6px; padding:8px 10px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08); z-index:1000;
+    visibility:hidden; opacity:0; pointer-events:none; transition:opacity .12s;
+  }
+
+  .btn-with-tooltip .info-icon:hover + .tooltip-box,
+  .btn-with-tooltip .tooltip-box:hover{
+    visibility:visible; opacity:1; pointer-events:auto;
   }
 </style>
