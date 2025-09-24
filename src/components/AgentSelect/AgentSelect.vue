@@ -7,7 +7,9 @@
       class="form-control"
       type="text"
       v-model="agent_str"
-      placeholder="Enter agent name (e.g. 'MEK', 'FPLX:MEK' or 'hgnc:3321')"
+      :placeholder="isOther
+        ? `Enter optional name (e.g. 'MEK', 'FPLX:MEK' or 'hgnc:3321')`
+        : `Enter name (e.g. 'MEK', 'FPLX:MEK' or 'hgnc:3321')`"
     />
     <span v-if="agent_str" class="inline-hint" aria-hidden="true">
       {{ hintText }}
@@ -15,7 +17,7 @@
   </div>
 
   <button class="btn btn-primary btn-with-tooltip" @click="lookupOptions">
-      Find Identifiers
+      Find Identifier
       <span class="info-icon">?</span>
       <div class="tooltip-box">
         Use this button to ground the name with
@@ -54,7 +56,7 @@
 <script>
 export default {
   name: 'AgentSelect',
-  props: ['value','exampleTick'],
+  props: ['value','exampleTick','isOther'],
   data () {
     return {
       agent_str: '',

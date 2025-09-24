@@ -6,7 +6,7 @@
                v-model="mesh_str"
                placeholder="(e.g. 'Covid-19', 'Diabetes', 'D000086382')">
         <button class="btn btn-primary btn-with-tooltip" @click="lookupOptions">
-          Find Identifiers
+          Find Identifier
           <span class="info-icon">?</span>
           <div class="tooltip-box">
             Use this button to ground the name with

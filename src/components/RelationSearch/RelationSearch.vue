@@ -37,12 +37,14 @@
           ></span>
 
       <div>
- <agent-select
-   :key="'agent-'+pair.idx"
-   v-model="pair.c.constraint"
-   :example-tick="exampleTick"
-   @display="setDisplay(pair.idx, $event)"
- ></agent-select>      </div>
+       <agent-select
+         :key="'agent-'+pair.idx"
+         v-model="pair.c.constraint"
+         :example-tick="exampleTick"
+         :is-other="i >= 1"
+         @display="setDisplay(pair.idx, $event)"
+       ></agent-select>
+      </div>
 
       <button
         class="btn btn-sm btn-outline-danger"
@@ -56,7 +58,7 @@
       </div>
       </div>
 
-      <b>Agent Role</b>
+      <b>Agent role</b>
       <div class="role-presets">
         <button type="button"
                 class="btn-role"
@@ -104,12 +106,12 @@
       <!-- filled constraint (non-agent only) -->
       <span v-else>
         <span v-if="pair.c.class === 'HasType'">
-          <b>Relation Types:</b>
+          <b>Relation type:</b>
           <type-select v-model="pair.c.constraint"></type-select>
         </span>
 
         <span v-else-if="pair.c.class === 'FromMeshIds'">
-          <b>Content Filter(MeSH/ID):</b>
+          <b>Context Filter(MeSH):</b>
           <mesh-select v-model="pair.c.constraint" :example-tick="exampleTick"></mesh-select>
         </span>
 
