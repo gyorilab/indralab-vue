@@ -1,23 +1,24 @@
 <template>
   <div class='relation-search nvm'
        :style="`cursor: ${(searching) ? 'progress': 'auto'};`">
-    <div id="search-row">
-      <div class="nav-btn">
-        <h4>
-          Statement Search
-          <button class="btn"
-                  :disabled="cannotGoBack"
-                  @click="backButton">
-            &lt; Back
-          </button>
-          <button class="btn"
-                  :disabled="cannotGoForward"
-                  @click="forwardButton">
-            Forward &gt;
-          </button>
-        </h4>
-      </div>
-    <div id="seach-box">
+    <div class="search-form-section">
+      <div id="search-row">
+        <div class="nav-btn">
+          <h4>
+            Statement Search
+            <button class="btn"
+                    :disabled="cannotGoBack"
+                    @click="backButton">
+              &lt; Back
+            </button>
+            <button class="btn"
+                    :disabled="cannotGoForward"
+                    @click="forwardButton">
+              Forward &gt;
+            </button>
+          </h4>
+        </div>
+      <div id="seach-box">
       <div class="agents">
         <div
           class="agent-block"
@@ -147,27 +148,30 @@
          </button>
         </div>
       </div>
-    </div>
-
-    <div id="error-box" class="nvm" v-show="search_error">
-      <hr>
-      <i style="color: red">Failed to load search results: {{ search_error }}.</i>
-    </div>
-    <div id='result-box' class='nvm' v-if='!empty_relations'>
-      <hr>
-      <h4>Results</h4>
-      <small>I found statements that {{ query_string }}</small>
-      <hr>
-      <h4 v-show='empty_relations & search_history'>Nothing found.</h4>
-      <div id="result-list">
-        <span v-for="agent_pair in list_shown" :key="agent_pair.id">
-          <agent-pair v-bind="agent_pair" :context_queries="context_queries"></agent-pair>
-        </span>
       </div>
-      <span v-show="searching">Loading...</span>
+
+      <div id="error-box" class="nvm" v-show="search_error">
+        <hr>
+        <i style="color: red">Failed to load search results: {{ search_error }}.</i>
+      </div>
     </div>
-    <div v-else-if="agent_pairs !== null">
-      No results found.
+    <div class="results-section">
+      <div id='result-box' class='nvm' v-if='!empty_relations'>
+        <hr>
+        <h4>Results</h4>
+        <small>I found statements that {{ query_string }}</small>
+        <hr>
+        <h4 v-show='empty_relations & search_history'>Nothing found.</h4>
+        <div id="result-list">
+          <span v-for="agent_pair in list_shown" :key="agent_pair.id">
+            <agent-pair v-bind="agent_pair" :context_queries="context_queries"></agent-pair>
+          </span>
+        </div>
+        <span v-show="searching">Loading...</span>
+      </div>
+      <div v-else-if="agent_pairs !== null">
+        No results found.
+      </div>
     </div>
   </div>
 </template>
