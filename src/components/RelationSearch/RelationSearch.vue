@@ -19,7 +19,7 @@
           </h4>
         </div>
       <div id="seach-box">
-      <div class="container">
+      <div class="container pl-0">
         <form>
           <div class="form-row"
               v-for="(pair, i) in hasAgentConstraints"
@@ -80,7 +80,7 @@
 
         <!-- blank slot: choose what to add (your current code) -->
         <template v-if="!pair.c.class">
-        <span class="spaced">More filters:</span>
+        <span>More filters:</span>
         <div class="form-inline">
           <select class="form-control"
                   name="constraint-select"
@@ -103,7 +103,7 @@
         </template>
 
         <template v-else-if="pair.c.class === 'FromMeshIds'">
-          <div class="container">
+          <div class="container pl-0">
             <form>
               <div class="form-row">
                 <mesh-select v-model="pair.c.constraint" :example-tick="exampleTick"></mesh-select>

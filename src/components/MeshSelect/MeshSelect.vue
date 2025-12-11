@@ -14,7 +14,7 @@
         >
         <button
           type="button"
-          class="btn btn-outline-primary ml-md-2 mt-2 mt-md-0 btn-with-tooltip mesh-action-button"
+          class="btn btn-secondary ml-md-2 mt-2 mt-md-0 btn-with-tooltip mesh-action-button"
           @click="lookupOptions"
         >
           Find Identifier

@@ -21,7 +21,7 @@
         />
         <button
           type="button"
-          class="btn btn-outline-primary ml-lg-2 mt-2 mt-lg-0 btn-with-tooltip agent-action-button"
+          class="btn btn-secondary ml-lg-2 mt-2 mt-lg-0 btn-with-tooltip agent-action-button"
           @click="lookupOptions"
         >
           Find Identifier
