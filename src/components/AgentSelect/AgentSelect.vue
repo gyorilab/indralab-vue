@@ -16,18 +16,18 @@
           type="text"
           v-model="agent_str"
           :placeholder="isOther
-            ? `Enter optional name (e.g. 'MEK', 'FPLX:MEK' or 'hgnc:3321')`
-            : `Enter name (e.g. 'MEK', 'FPLX:MEK' or 'hgnc:3321')`"
+            ? `Enter name or identifier (e.g. 'MEK', 'FPLX:MEK', 'hgnc:3321' or 'selumetinib')`
+            : `Enter name or identifier (e.g. 'MEK', 'FPLX:MEK', 'hgnc:3321' or 'selumetinib')`"
         />
         <button
           type="button"
           class="btn btn-secondary ml-lg-2 mt-2 mt-lg-0 btn-with-tooltip agent-action-button"
           @click="lookupOptions"
         >
-          Find Identifier
+          Find identifier
           <span class="info-icon">?</span>
-          <div class="tooltip-box">
-            Use this button to ground the name with
+          <div class="tooltip-box text-wrap">
+            Use this button to ground the entered name with
             <a href="https://grounding.indra.bio/" target="_blank">Gilda</a>.
           </div>
         </button>

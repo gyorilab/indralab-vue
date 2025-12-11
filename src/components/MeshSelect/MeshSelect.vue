@@ -1,7 +1,7 @@
 <template>
   <div class="mesh-select form-group col-12 col-lg-10 mb-3">
     <label :for="inputIdComputed" class="d-block mb-2">
-      {{ labelText }}
+      Context filter (<a href="https://meshb.nlm.nih.gov/" title="Medical Subject Headings (MeSH) database" target="_blank">MeSH</a>)
     </label>
     <template v-if="!options || options_empty">
       <div class="d-flex align-items-center flex-wrap flex-md-nowrap mesh-row">
@@ -10,14 +10,14 @@
           type="text"
           v-model="mesh_str"
           :id="inputIdComputed"
-          placeholder="(e.g. 'Covid-19', 'Diabetes', 'D000086382')"
+          placeholder="Name or identifier for MeSH term (e.g. 'Covid-19', 'Diabetes', 'D000086382')"
         >
         <button
           type="button"
           class="btn btn-secondary ml-md-2 mt-2 mt-md-0 btn-with-tooltip mesh-action-button"
           @click="lookupOptions"
         >
-          Find Identifier
+          Find identifier
           <span class="info-icon">?</span>
           <div class="tooltip-box">
             Use this button to ground the name with
@@ -76,10 +76,6 @@
       inputId: {
         type: String,
         default: null
-      },
-      labelText: {
-        type: String,
-        default: 'Context Filter (MeSH)'
       }
     },
     data: function() {

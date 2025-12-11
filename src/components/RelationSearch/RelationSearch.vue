@@ -5,7 +5,7 @@
       <div id="search-row">
         <div class="nav-btn">
           <h4>
-            Statement Search
+            Statement search
             <button class="btn"
                     :disabled="cannotGoBack"
                     @click="backButton">
@@ -30,7 +30,7 @@
               :inputId="i === 0 ? 'agent1' : 'agent2'"
               v-model="pair.c.constraint"
               :exampleTick="exampleTick"
-              :labelText="i === 0 ? 'Agent' : 'Other agent'"
+              :labelText="i === 0 ? 'Agent' : 'Other agent (optional)'"
               :isOther="i >= 1"
               @display="setDisplay(pair.idx, $event)"
             ></agent-select>
@@ -547,10 +547,20 @@
 
       updateShareUrl() {
         const params = this.buildReadableParams();
-        const url = new URL(window.location.href);
-        url.search = params.toString();
-        history.replaceState(null, '', url.toString());
-        this.shareUrl = url.toString();
+        // Defensive check: ensure window.location.href is valid before constructing URL
+        const baseUrl = window.location.href || window.location.origin + window.location.pathname;
+        if (!baseUrl || baseUrl === '') {
+          console.warn('Cannot update share URL: window.location.href is empty');
+          return;
+        }
+        try {
+          const url = new URL(baseUrl);
+          url.search = params.toString();
+          history.replaceState(null, '', url.toString());
+          this.shareUrl = url.toString();
+        } catch (e) {
+          console.warn('Failed to construct URL for share link:', e);
+        }
       },
 
       applyReadableParams(params) {
