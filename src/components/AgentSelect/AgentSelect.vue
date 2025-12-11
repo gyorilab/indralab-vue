@@ -6,31 +6,47 @@
         :class="isOther ? 'orange-dot role-dot' : 'blue-dot role-dot'"
         aria-hidden="true"
       ></span>
+      <template v-if="isOther">
+        <button
+          type="button"
+          class="btn btn-sm btn-light btn-link btn-with-tooltip ml-1"
+          data-toggle="collapse"
+          @click="isCollapsed = !isCollapsed"
+          :data-target="'#collapse-' + inputId"
+        >
+          <i class="fas fa-chevron-down fa-sm" :class="{ 'fa-rotate-180': !isCollapsed }"></i>
+            Add other agent
+          <span class="info-icon">?</span>
+          <div class="tooltip-box text-wrap">If you want to use two agents in the search, add the second agent here.</div>
+        </button>
+      </template>
     </label>
 
     <template v-if="!options || options_empty">
-      <div class="d-flex align-items-center flex-wrap flex-md-nowrap agent-row">
-        <input
-          class="form-control flex-grow-1"
-          :id="inputId"
-          type="text"
-          v-model="agent_str"
-          :placeholder="isOther
-            ? `Enter name or identifier (e.g. 'MEK', 'FPLX:MEK', 'hgnc:3321' or 'selumetinib')`
-            : `Enter name or identifier (e.g. 'MEK', 'FPLX:MEK', 'hgnc:3321' or 'selumetinib')`"
-        />
-        <button
-          type="button"
-          class="btn btn-secondary ml-lg-2 mt-2 mt-lg-0 btn-with-tooltip agent-action-button"
-          @click="lookupOptions"
-        >
-          Find identifier
-          <span class="info-icon">?</span>
-          <div class="tooltip-box text-wrap">
-            Use this button to ground the entered name with
-            <a href="https://grounding.indra.bio/" target="_blank">Gilda</a>.
-          </div>
-        </button>
+      <div class="collapse-container" :class="{ 'collapse': isOther, 'show': !isOther }" :id="'collapse-' + inputId">
+        <div class="d-flex align-items-center flex-wrap flex-md-nowrap agent-row">
+          <input
+            class="form-control flex-grow-1"
+            :id="inputId"
+            type="text"
+            v-model="agent_str"
+            :placeholder="isOther
+              ? `Enter name or identifier (e.g. 'MEK', 'FPLX:MEK', 'hgnc:3321' or 'selumetinib')`
+              : `Enter name or identifier (e.g. 'MEK', 'FPLX:MEK', 'hgnc:3321' or 'selumetinib')`"
+          />
+          <button
+            type="button"
+            class="btn btn-secondary ml-lg-2 mt-2 mt-lg-0 btn-with-tooltip agent-action-button"
+            @click="lookupOptions"
+          >
+            Find identifier
+            <span class="info-icon">?</span>
+            <div class="tooltip-box text-wrap">
+              Use this button to ground the entered name with
+              <a href="https://grounding.indra.bio/" target="_blank">Gilda</a>.
+            </div>
+          </button>
+        </div>
       </div>
       <div class="mt-1">
         <small v-if="agent_str && hasSearched" class="form-text text-muted">{{ hintText }}</small>
@@ -93,6 +109,7 @@ export default {
       selected_option_idx: -1,
       search_error: null,
       hasSearched: false,
+      isCollapsed: true,
     }
   },
   methods: {
@@ -243,6 +260,14 @@ export default {
   .gilda-dropdown {
     width: 100%;
     min-width: 0;
+  }
+
+  .collapse-container {
+    overflow: hidden;
+  }
+
+  .collapse-container:not(.show) {
+    display: none !important;
   }
 
   .agent-row {
