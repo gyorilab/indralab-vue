@@ -1,5 +1,5 @@
 <template>
-  <div class="mesh-select form-group col-12 col-lg-7 mb-3">
+  <div class="mesh-select form-group col-12 col-lg-10 mb-3">
     <label :for="inputIdComputed" class="d-block mb-2">
       {{ labelText }}
     </label>
