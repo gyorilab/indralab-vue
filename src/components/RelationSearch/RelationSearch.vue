@@ -19,46 +19,33 @@
           </h4>
         </div>
       <div id="seach-box">
-      <div class="agents">
-        <div
-          class="agent-block"
-          v-for="(pair, i) in hasAgentConstraints"
-          :key="pair.idx" style="display:flex; align-items:center;"
-        >
-          <b>{{ i === 0 ? 'Agent' : 'Other agent' }}</b>
-          <span
-            v-if="i === 0"
-            class="blue-dot role-dot"
-            aria-hidden="true"
-          ></span>
-          <span
-            v-else-if="i === 1"
-            class="orange-dot role-dot"
-            aria-hidden="true"
-          ></span>
+      <div class="container">
+        <form>
+          <div class="form-row"
+              v-for="(pair, i) in hasAgentConstraints"
+              :key="pair.idx">
 
-      <div>
-       <agent-select
-         :key="'agent-'+pair.idx"
-         v-model="pair.c.constraint"
-         :example-tick="exampleTick"
-         :is-other="i >= 1"
-         @display="setDisplay(pair.idx, $event)"
-       ></agent-select>
-      </div>
+            <agent-select
+              :key="'agent-'+pair.idx"
+              :inputId="i === 0 ? 'agent1' : 'agent2'"
+              v-model="pair.c.constraint"
+              :exampleTick="exampleTick"
+              :labelText="i === 0 ? 'Agent' : 'Other agent'"
+              :isOther="i >= 1"
+              @display="setDisplay(pair.idx, $event)"
+            ></agent-select>
 
-      <button
-        class="btn btn-sm btn-outline-danger"
-        v-if="i >= 2"
-        @click="removeConstraint(pair.idx)"
-        style="margin-left:6px"
-        title="Remove this agent"
-      >
-        ×
-      </button>
+            <button
+              class="btn btn-sm btn-outline-danger"
+              v-if="i >= 2"
+              @click="removeConstraint(pair.idx)"
+              style="margin-left:6px"
+              title="Remove this agent">
+              ×
+            </button>
+          </div>
+        </form>
       </div>
-      </div>
-
       <b>Agent role</b>
       <div class="role-presets">
         <button type="button"
@@ -86,38 +73,48 @@
         </button>
       </div>
 
-      <div class="form-inline"
+      <!-- template this -->
+      <div
          v-for="pair in nonAgentConstraints"
          :key="pair.idx">
 
         <!-- blank slot: choose what to add (your current code) -->
-        <span v-if="!pair.c.class">
+        <template v-if="!pair.c.class">
         <span class="spaced">More filters:</span>
-        <select class="form-control"
-                @input="reactToConstraintSelection($event, pair.idx)">
-          <option :value="null" selected hidden>select filters...</option>
-          <option v-for="(type_val, type_name) in constraint_classes"
-                  :key="type_name"
-                  :value="type_val">
-             Filter by {{ type_name === 'mesh' ? (type_name + ' ID') : type_name }}
-          </option>
-        </select>
-      </span>
+        <div class="form-inline">
+          <select class="form-control"
+                  name="constraint-select"
+                  @input="reactToConstraintSelection($event, pair.idx)">
+            <option :value="null" selected hidden>select filters...</option>
+            <option v-for="(type_val, type_name) in constraint_classes"
+                    :key="type_name"
+                    :value="type_val">
+              Filter by {{ type_name === 'mesh' ? (type_name + ' ID') : type_name }}
+            </option>
+          </select>
+        </div>
+      </template>
 
       <!-- filled constraint (non-agent only) -->
-      <span v-else>
-        <span v-if="pair.c.class === 'HasType'">
+      <template v-else>
+        <template v-if="pair.c.class === 'HasType'">
           <b>Relation type:</b>
           <type-select v-model="pair.c.constraint"></type-select>
-        </span>
+        </template>
 
-        <span v-else-if="pair.c.class === 'FromMeshIds'">
-          <b>Context Filter(MeSH):</b>
-          <mesh-select v-model="pair.c.constraint" :example-tick="exampleTick"></mesh-select>
-        </span>
+        <template v-else-if="pair.c.class === 'FromMeshIds'">
+          <div class="container">
+            <form>
+              <div class="form-row">
+                <mesh-select v-model="pair.c.constraint" :example-tick="exampleTick"></mesh-select>
+              </div>
+            </form>
+          </div>
+        </template>
 
-        <span v-else-if="pair.c.class === 'FromPapers'">
-          <b>Paper:</b>
+        <template v-else-if="pair.c.class === 'FromPapers'">
+          <div class="form-inline">
+            <b>Paper:</b>
           <paper-select v-model="pair.c.constraint"></paper-select>
           <button
             class="btn btn-sm btn-outline-danger"
@@ -125,13 +122,15 @@
             style="margin-left:6px"
             title="Remove Paper constraint"
           >×</button>
-        </span>
+          </div>
+        </template>
 
-        <span v-else>
-            <b style="color: red;">Developer error: unhandled constraint.class.</b>
-          </span>
-        </span>
+        <template v-else>
+          <b style="color: red;">Developer error: unhandled constraint.class.</b>
+        </template>
+      </template>
         </div>
+        <!-- ^ template here -->
 
 
         <div>

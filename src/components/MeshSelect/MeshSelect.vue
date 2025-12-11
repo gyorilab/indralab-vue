@@ -1,11 +1,22 @@
 <template>
-  <span class="mesh-select">
-      <span v-if="!options || options_empty">
-        <input class="form-control"
-               type="text"
-               v-model="mesh_str"
-               placeholder="(e.g. 'Covid-19', 'Diabetes', 'D000086382')">
-        <button class="btn btn-primary btn-with-tooltip" @click="lookupOptions">
+  <div class="mesh-select form-group col-12 col-lg-7 mb-3">
+    <label :for="inputIdComputed" class="d-block mb-2">
+      {{ labelText }}
+    </label>
+    <template v-if="!options || options_empty">
+      <div class="d-flex align-items-center flex-wrap flex-md-nowrap mesh-row">
+        <input
+          class="form-control flex-grow-1"
+          type="text"
+          v-model="mesh_str"
+          :id="inputIdComputed"
+          placeholder="(e.g. 'Covid-19', 'Diabetes', 'D000086382')"
+        >
+        <button
+          type="button"
+          class="btn btn-outline-primary ml-md-2 mt-2 mt-md-0 btn-with-tooltip mesh-action-button"
+          @click="lookupOptions"
+        >
           Find Identifier
           <span class="info-icon">?</span>
           <div class="tooltip-box">
@@ -13,25 +24,33 @@
             <a href="https://grounding.indra.bio/" target="_blank">Gilda</a>.
           </div>
         </button>
-        <span v-show='searching'>Searching...</span>
-        <span v-show='options_empty'>No mesh IDs found...</span>
-        <i style="color: red; cursor: default"
-           v-show="search_error"
-           :title="search_error">
-          Search failed!
-        </i>
-      </span>
-      <span v-else-if="options.length === 1">
-        <span class="label">GILDA grounding:</span>
-        <span class='form-control' v-html="printOption(options[0])"></span>
-        <button class="btn btn-primary"
-                @click='resetOptions'>
-            Cancel
+      </div>
+      <div class="mt-1">
+        <small v-if="hasSearched && searching" class="text-muted d-block">Searching...</small>
+        <small v-if="hasSearched && options_empty" class="text-warning d-block">No MeSH IDs found...</small>
+        <small
+          v-if="hasSearched && search_error"
+          class="text-danger d-block"
+          :title="search_error"
+          style="cursor: default"
+        >Search failed!</small>
+      </div>
+    </template>
+
+    <div v-else-if="options.length === 1" class="mt-2">
+      <small class="text-muted d-block mb-1">GILDA grounding</small>
+      <div class="d-flex align-items-center flex-wrap flex-md-nowrap mesh-row">
+        <div class="form-control gilda-dropdown flex-grow-1" :id="inputIdComputed" v-html="printOption(options[0])"></div>
+        <button type="button" class="btn btn-outline-secondary ml-md-2 mt-2 mt-md-0 mesh-action-button" @click="resetOptions">
+          Change
         </button>
-      </span>
-      <span v-else>
-        <span class="label">GILDA grounding:</span>
-        <select class="form-control" v-model='selected_option_idx'>
+      </div>
+    </div>
+
+    <div v-else class="mt-2">
+      <small class="text-muted d-block mb-1">GILDA grounding</small>
+      <div class="d-flex align-items-center flex-wrap flex-md-nowrap mesh-row">
+        <select class="custom-select gilda-dropdown flex-grow-1" :id="inputIdComputed" v-model="selected_option_idx">
           <option :value='-1' selected disabled hidden>Select grounding option...</option>
           <option v-for='(option, option_idx) in options'
                   :key='option_idx'
@@ -39,18 +58,30 @@
                   v-html="printOption(option)">
           </option>
         </select>
-        <button class="agent-select-button btn btn-primary"
+        <button class="btn btn-outline-secondary ml-md-2 mt-2 mt-md-0 mesh-action-button"
                 @click='resetOptions'>
             Cancel
         </button>
-      </span>
-  </span>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
   export default {
     name: "MeshSelect",
-    props: ['value', 'exampleTick'],
+    props: {
+      value: {},
+      exampleTick: {},
+      inputId: {
+        type: String,
+        default: null
+      },
+      labelText: {
+        type: String,
+        default: 'Context Filter (MeSH)'
+      }
+    },
     data: function() {
       return {
         mesh_str: '',
@@ -59,33 +90,49 @@
         selected_option_idx: -1,
         search_error: null,
         suppressEmitOnce: false,
+        hasSearched: false,
       }
     },
     methods: {
       lookupOptions: async function() {
-        this.searching = true;
         if (!this.mesh_str) {
           alert("Please enter a mesh term...");
           this.searching=false;
           return;
         }
+        if (!this.$ground_url) {
+          this.search_error = 'Grounding service URL is not configured.';
+          this.hasSearched = true;
+          return;
+        }
+        this.search_error = null;
+        this.hasSearched = true;
+        this.searching = true;
         const resp = await fetch(
           `${this.$ground_url}?agent=${this.mesh_str}`,
           {method: 'GET'}
         );
-        if (resp.status === 200) {
+        const contentType = resp.headers.get('content-type') || '';
+        if (!resp.ok) {
+          this.search_error = `(${resp.status}) ${resp.statusText}`;
+          this.options = [];
+        } else if (!contentType.includes('application/json')) {
+          this.search_error = 'Unexpected response from grounding service.';
+          this.options = [];
+        } else {
           const options = await resp.json();
           this.options = options.filter(o => o.term?.db === 'MESH');
           if (this.options.length === 1) this.selected_option_idx = 0;
           this.search_error = null;
-        } else {
-          this.search_error = `(${resp.status}) ${resp.statusText}`
         }
         this.searching = false;
       },
       resetOptions: function() {
         this.options = null;
         this.selected_option_idx = -1;
+        this.hasSearched = false;
+        this.search_error = null;
+        this.searching = false;
       },
       printOption: function(option) {
         let term = option.term;
@@ -108,6 +155,9 @@
           ret = { mesh_ids: [this.options[this.selected_option_idx].term.id] };
         }
         return ret;
+      },
+      inputIdComputed () {
+        return this.inputId || `mesh-input-${this._uid}`
       }
     },
     watch: {
@@ -119,6 +169,7 @@
         this.options = null;
         this.selected_option_idx = -1;
         this.search_error = null;
+        this.hasSearched = false;
       },
       constraint(newVal) {
         if (!newVal) return;
@@ -132,21 +183,24 @@
 </script>
 
 <style scoped>
-  .agent-select {
-    margin: 0.2em;
-  }
-  select, input, button {
-    margin: 0.2em;
-  }
-  .label {
-    margin-left: 0.5em;
-    margin-right: 0.2em;
-  }
   .mesh-select {
-    display: inline-flex;
+    display: block;
+    width: 100%;
+    max-width: 100%;
   }
-  .mesh-select input.form-control {
-    width: 400px;
+
+  .mesh-row {
+    gap: 8px;
+  }
+
+  .mesh-action-button {
+    min-width: 170px;
+    flex-shrink: 0;
+  }
+
+  .gilda-dropdown {
+    width: 100%;
+    min-width: 0;
   }
 
   .btn-with-tooltip{ position:relative; padding-right:34px; overflow:visible; }
