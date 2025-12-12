@@ -264,6 +264,14 @@
           alert('Please enter at least one constraint.');
           return;
         }
+        
+        // Validate MeSH IDs if MeshSelect has input
+        const meshValidationError = this.validateMeshIds();
+        if (meshValidationError) {
+          alert(meshValidationError);
+          return;
+        }
+        
         this.lastSearchOk = false;
         this.shareUrl = "";
         this.next_offset = 0;
@@ -454,6 +462,37 @@
         if (param.class === 'FromPapers')  return Array.isArray(c.paper_list) && c.paper_list.length > 0;
 
         return false;
+      },
+      
+      validateMeshIds() {
+        // Find all FromMeshIds constraints
+        const meshConstraints = Object.values(this.constraints).filter(
+          c => c && c.class === 'FromMeshIds' && c.constraint
+        );
+        
+        for (const constraint of meshConstraints) {
+          const meshIds = constraint.constraint.mesh_ids || [];
+          
+          // If mesh_ids array is empty, no validation needed (empty input is allowed)
+          if (meshIds.length === 0) {
+            continue;
+          }
+          
+          // Validate each mesh_id
+          // MeSH ID pattern: starts with a letter (typically D, C, etc.) followed by digits
+          // Example: D0135456, D000086382
+          const meshIdPattern = /^[A-Z]\d+$/i;
+          
+          for (const meshId of meshIds) {
+            const meshIdStr = String(meshId).trim();
+            // If there's a value, it must match the MeSH ID pattern
+            if (meshIdStr && !meshIdPattern.test(meshIdStr)) {
+              return `Invalid MeSH ID format: "${meshIdStr}". You must enter a valid MeSH ID, either directly or by searching for a term with the help of Gilda. MeSH IDs should start with the letter 'D' followed by numbers (e.g., D010612 or D000086382).`;
+            }
+          }
+        }
+        
+        return null; // No validation errors
       },
       presetRoles(mode) {
         const agents = this.hasAgentConstraints
