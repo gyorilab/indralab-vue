@@ -73,7 +73,6 @@
         </button>
       </div>
 
-      <!-- template this -->
       <div
          v-for="pair in nonAgentConstraints"
          :key="pair.idx">
@@ -130,7 +129,6 @@
         </template>
       </template>
         </div>
-        <!-- ^ template here -->
 
 
         <div>

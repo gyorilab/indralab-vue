@@ -263,7 +263,7 @@ export default {
   }
 
   .collapse-container {
-    overflow: hidden;
+    overflow: visible;
   }
 
   .collapse-container:not(.show) {
