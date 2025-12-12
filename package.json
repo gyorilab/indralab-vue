@@ -9,7 +9,7 @@
   "jsdelivr": "dist/IndralabVue.umd.min.js",
   "scripts": {
     "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build --target lib --name IndralabVue src/index.js",
+    "build": "NODE_OPTIONS=--openssl-legacy-provider vue-cli-service build --target lib --name IndralabVue src/index.js",
     "lint": "vue-cli-service lint",
     "watch": "npm run build -- --watch",
     "test": "npm run watch -- --mode development",
@@ -17,7 +17,8 @@
   },
   "dependencies": {
     "core-js": "^3.6.5",
-    "vue": "^2.6.12"
+    "vue": "^2.6.12",
+    "vue-multiselect": "^2.1.6"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^4.5.4",

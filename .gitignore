@@ -6,3 +6,4 @@ dist
 
 # VSCode specifics
 .DS_Store
+node_modules*
