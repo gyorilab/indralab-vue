@@ -813,6 +813,12 @@
         this.$set(typePair.c, 'constraint', { stmt_types: [] });
       }
 
+      // Clear mesh constraint when example is clicked
+      const meshPair = this.nonAgentConstraints.find(p => p.c.class === 'FromMeshIds');
+      if (meshPair) {
+        this.$set(meshPair.c, 'constraint', { mesh_ids: [] });
+      }
+
     this.$nextTick(() => { this.exampleTick++; });
     };
 
