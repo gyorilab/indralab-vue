@@ -30,7 +30,7 @@
               :inputId="i === 0 ? 'agent1' : 'agent2'"
               v-model="pair.c.constraint"
               :exampleTick="exampleTick"
-              :labelText="i === 0 ? 'Agent' : 'Other agent (optional)'"
+              :labelText="i === 0 ? 'Agent (the name or identifier of a gene, family/complex, small molecule, biological process, etc.)' : 'Other agent (optional)'"
               :isOther="i >= 1"
               @display="setDisplay(pair.idx, $event)"
             ></agent-select>
