@@ -21,7 +21,7 @@
                     class="btn btn-sm"
                     :class="show_search ? 'btn-outline-secondary' : 'btn-primary'"
                     @click="show_search = !show_search">
-              {{ show_search ? 'Hide filters' : 'Show filters' }}
+              {{ show_search ? 'Hide search box' : 'Show search box' }}
             </button>
           </h4>
         </div>
