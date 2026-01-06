@@ -18,7 +18,7 @@
             </button>
           </h4>
         </div>
-      <div id="seach-box">
+      <div id="search-box">
       <div class="container pl-0">
         <form>
           <div class="form-row"
