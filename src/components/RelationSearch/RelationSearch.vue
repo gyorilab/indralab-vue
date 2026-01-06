@@ -16,11 +16,12 @@
                     @click="forwardButton">
               Forward &gt;
             </button>
-            <button type="button"
+            <button v-if="hasSearched"
+                    type="button"
                     class="btn btn-sm"
                     :class="show_search ? 'btn-outline-secondary' : 'btn-primary'"
                     @click="show_search = !show_search">
-              {{ show_search ? 'Hide search box' : 'Show search box' }}
+              {{ show_search ? 'Hide filters' : 'Show filters' }}
             </button>
           </h4>
         </div>
@@ -277,7 +278,7 @@
           alert(meshValidationError);
           return;
         }
-        
+
         this.lastSearchOk = false;
         this.shareUrl = "";
         this.next_offset = 0;
@@ -286,8 +287,16 @@
         this.pushHistory?.(); // harmless if you later remove history
 
         const search_hide = await this.search();
-        if (search_hide) this.show_search = false;
-        return search_hide;
+        if (search_hide) {
+        // wait until Vue has rendered results
+        await this.$nextTick();
+
+        // collapse and enable hide button toggle
+        this.show_search = false;
+        this.hasSearched = true;
+      }
+
+      return search_hide;
       },
 
       search: async function() {
