@@ -16,9 +16,14 @@
                     @click="forwardButton">
               Forward &gt;
             </button>
+            <button class="btn btn-sm btn-outline-secondary"
+                type="button"
+                @click="show_search = !show_search">
+          {{ show_search ? 'Hide filters' : 'Show filters' }}
+             </button>
           </h4>
         </div>
-      <div id="search-box">
+      <div id="search-box" v-show="show_search">
       <div class="container pl-0">
         <form>
           <div class="form-row"
@@ -278,7 +283,10 @@
         this.agent_pairs = null;
         this.complexes_covered = null;
         this.pushHistory?.(); // harmless if you later remove history
-        return await this.search();
+
+        const search_hide = await this.search();
+        if (search_hide) this.show_search = false;
+        return search_hide;
       },
 
       search: async function() {
