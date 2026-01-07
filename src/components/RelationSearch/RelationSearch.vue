@@ -16,9 +16,16 @@
                     @click="forwardButton">
               Forward &gt;
             </button>
+            <button v-if="hasSearched"
+                    type="button"
+                    class="btn btn-sm"
+                    :class="show_search ? 'btn-outline-secondary' : 'btn-primary'"
+                    @click="show_search = !show_search">
+              {{ show_search ? 'Hide search box' : 'Show search box' }}
+            </button>
           </h4>
         </div>
-      <div id="seach-box">
+      <div id="search-box" v-show="show_search">
       <div class="container pl-0">
         <form>
           <div class="form-row"
@@ -271,14 +278,25 @@
           alert(meshValidationError);
           return;
         }
-        
+
         this.lastSearchOk = false;
         this.shareUrl = "";
         this.next_offset = 0;
         this.agent_pairs = null;
         this.complexes_covered = null;
         this.pushHistory?.(); // harmless if you later remove history
-        return await this.search();
+
+        const search_hide = await this.search();
+        if (search_hide) {
+        // wait until Vue has rendered results
+        await this.$nextTick();
+
+        // collapse and enable hide button toggle
+        this.show_search = false;
+        this.hasSearched = true;
+      }
+
+      return search_hide;
       },
 
       search: async function() {
