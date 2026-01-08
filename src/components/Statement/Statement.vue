@@ -4,6 +4,11 @@
       <div class="col text-left">
         <h5>
           <span v-html='english'></span>
+
+          <i class="fas fa-chevron-down fa-xs stmt-chevron"
+             :class="{ 'fa-rotate-270': !show_list }"
+             style="margin-left: 6px;"></i>
+
           <small v-for='badge in displayed_badges'
                 :class="`badge badge-pill float-${badge.loc}`"
                 :style="`background-color: ${badge.color}; color: white;`"
