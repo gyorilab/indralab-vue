@@ -16,7 +16,32 @@
           </div>
         </div>
       </div>
-      <div class='col-10' v-html='always_text'></div>
+      <div class='col-10'>
+        <span v-html='always_text'></span>
+        <span v-if="llm_verification && llm_verification.verdict"
+              class="llm-verification">
+          <small class="badge badge-pill"
+                 :class="llm_verification.verdict === 'correct'
+                   ? 'badge-success' : 'badge-danger'"
+                 tabindex="0">
+            {{ llm_verification.verdict === 'incorrect' &&
+               llm_verification.error_category
+               ? llm_verification.error_category
+               : llm_verification.verdict }}
+          </small>
+          <span class="llm-verification-tooltip" role="tooltip">
+            <strong>LLM verified {{ llm_verification.verdict }}</strong>
+            <span v-if="llm_verification.error_category"
+                  class="llm-verification-line">
+              <strong>Error category:</strong>
+              {{ llm_verification.error_category }}
+            </span>
+            <span class="llm-verification-line">
+              {{ llm_verification.explanation || 'No explanation available.' }}
+            </span>
+          </span>
+        </span>
+      </div>
       <div class='col-1 text-right'>
         <ref-link :text_refs="text_refs"></ref-link>
       </div>
@@ -56,6 +81,7 @@
       source_hash: String,
       stmt_hash: String,
       original_json: Object,
+      llm_verification: Object,
     },
     data: function () {
       return {
@@ -127,5 +153,42 @@
 
   .clickable:hover {
     opacity: 0.6;
+  }
+
+  .llm-verification {
+    cursor: default;
+    display: inline-block;
+    margin-left: 0.4rem;
+    position: relative;
+  }
+
+  .llm-verification-tooltip {
+    background: white;
+    border: 2px solid #0d5aa7;
+    border-radius: 0.4rem;
+    top: calc(100% + 0.5rem);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    color: #212529;
+    display: none;
+    font-size: 0.95rem;
+    left: 50%;
+    line-height: 1.4;
+    padding: 0.75rem;
+    position: absolute;
+    text-align: left;
+    transform: translateX(-50%);
+    width: 24rem;
+    max-width: 75vw;
+    z-index: 1000;
+  }
+
+  .llm-verification:hover .llm-verification-tooltip,
+  .llm-verification:focus-within .llm-verification-tooltip {
+    display: block;
+  }
+
+  .llm-verification-line {
+    display: block;
+    margin-top: 0.4rem;
   }
 </style>
