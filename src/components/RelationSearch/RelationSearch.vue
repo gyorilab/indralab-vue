@@ -334,7 +334,19 @@
           if (!this.isFilled(param)) continue; // ← skip empty constraints
 
           if (param.class === 'HasAgent') {
-            query_jsons.push(param);
+            let constraint = param.constraint;
+            if (param.constraint.namespace === 'TEXT' && this.$ground_url) {
+              const url = `${this.$ground_url}?agent=${encodeURIComponent(param.constraint.agent_id)}`;
+              const options = await fetch(url, { method: 'GET' })
+                .then(resp => resp.ok ? resp.json() : [])
+                .catch(() => []);
+              const term = options[0]?.term;
+              if (term) {
+                constraint = {...constraint,
+                  agent_id: term.id, namespace: term.db};
+              }
+            }
+            query_jsons.push({...param, constraint});
           } else {
             for (let [class_name, list_name] of [
               ['HasType', 'stmt_types'],
