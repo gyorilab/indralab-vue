@@ -15,32 +15,35 @@
             {{ source_api }}
           </div>
         </div>
+        <div v-if="llm_verification && llm_verification.verdict"
+             class="row">
+          <div class="col-12 nvm text-center">
+            <span class="llm-verification"
+                  :aria-label="`LLM verified ${llm_verification.verdict}`"
+                  tabindex="0">
+              <span class="badge badge-pill llm-verification-badge"
+                    :class="llm_verification.verdict === 'correct'
+                      ? 'badge-success' : 'badge-danger'">
+                AI {{ llm_verification.verdict === 'correct' ? '✓' : '×' }}
+              </span>
+              <span class="llm-verification-tooltip" role="tooltip">
+                <strong>LLM verified {{ llm_verification.verdict }}</strong>
+                <span v-if="llm_verification.error_category"
+                      class="llm-verification-line">
+                  <strong>Error category:</strong>
+                  {{ llm_verification.error_category }}
+                </span>
+                <span class="llm-verification-line">
+                  {{ llm_verification.explanation ||
+                     'No explanation available.' }}
+                </span>
+              </span>
+            </span>
+          </div>
+        </div>
       </div>
       <div class='col-10'>
         <span v-html='always_text'></span>
-        <span v-if="llm_verification && llm_verification.verdict"
-              class="llm-verification">
-          <small class="badge badge-pill"
-                 :class="llm_verification.verdict === 'correct'
-                   ? 'badge-success' : 'badge-danger'"
-                 tabindex="0">
-            {{ llm_verification.verdict === 'incorrect' &&
-               llm_verification.error_category
-               ? llm_verification.error_category
-               : llm_verification.verdict }}
-          </small>
-          <span class="llm-verification-tooltip" role="tooltip">
-            <strong>LLM verified {{ llm_verification.verdict }}</strong>
-            <span v-if="llm_verification.error_category"
-                  class="llm-verification-line">
-              <strong>Error category:</strong>
-              {{ llm_verification.error_category }}
-            </span>
-            <span class="llm-verification-line">
-              {{ llm_verification.explanation || 'No explanation available.' }}
-            </span>
-          </span>
-        </span>
       </div>
       <div class='col-1 text-right'>
         <ref-link :text_refs="text_refs"></ref-link>
@@ -158,8 +161,12 @@
   .llm-verification {
     cursor: default;
     display: inline-block;
-    margin-left: 0.4rem;
     position: relative;
+  }
+
+  .llm-verification-badge {
+    font-size: 0.8rem;
+    padding: 0.3rem 0.5rem;
   }
 
   .llm-verification-tooltip {
@@ -171,12 +178,11 @@
     color: #212529;
     display: none;
     font-size: 0.95rem;
-    left: 50%;
+    left: 0;
     line-height: 1.4;
     padding: 0.75rem;
     position: absolute;
     text-align: left;
-    transform: translateX(-50%);
     width: 24rem;
     max-width: 75vw;
     z-index: 1000;
