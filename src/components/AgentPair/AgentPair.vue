@@ -6,6 +6,8 @@
       <div class='col text-left'>
         <h5>
           <span v-html="english"></span>
+          <correctness-indicator v-if="llm_correctness != null"
+                                 :correctness="llm_correctness"/>
           <small v-if='cur_count'
                  class='badge badge-success badge-pill'>
             &#9998; {{ cur_count }}
@@ -44,10 +46,12 @@
 </template>
 
 <script>
+  import CorrectnessIndicator from '../CorrectnessIndicator'
   import piecemeal_mixin from '../piecemeal_mixin'
 
   export default {
     name: "AgentPair",
+    components: {CorrectnessIndicator},
     props: {
       english: String,
       source_counts: Object,
@@ -58,6 +62,10 @@
       },
       context_queries: Array,
       hashes: Array,
+      llm_correctness: {
+        type: Object,
+        default: null
+      },
     },
     data: function() {
       return {
