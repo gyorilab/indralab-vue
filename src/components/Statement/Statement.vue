@@ -4,6 +4,8 @@
       <div class="col text-left">
         <h5>
           <span v-html='english'></span>
+          <correctness-indicator v-if="llm_correctness != null"
+                                 :correctness="llm_correctness"/>
 
           <i class="fas fa-chevron-down fa-xs stmt-chevron"
              :class="{ 'fa-rotate-270': !show_list }"
@@ -57,16 +59,22 @@
 </template>
 
 <script>
+  import CorrectnessIndicator from '../CorrectnessIndicator'
   import piecemeal_mixin from '../piecemeal_mixin'
 
   export default {
     name: "Statement",
+    components: {CorrectnessIndicator},
     props: {
       evidence: Array,
       english: String,
       hash: String,
       sources: Object,
       total_evidence: Number,
+      llm_correctness: {
+        type: Object,
+        default: null
+      },
       context_queries: {
         type: Array,
         default: null
