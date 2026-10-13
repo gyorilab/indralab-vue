@@ -10,7 +10,9 @@
               ? display.color : '#dee2e6' }"></span>
     </span>
     <span :style="{ color: display.color }">{{ display.label }}</span>
-    <span class="correctness-score">{{ display.score }}%</span>
+    <span v-if="display.score != null" class="correctness-score">
+      {{ display.score }}%
+    </span>
   </span>
 </template>
 
@@ -25,6 +27,19 @@
     },
     computed: {
       display: function() {
+        const labels = ['weak', 'medium', 'strong'];
+        const colors = ['#dc3545', '#f0ad4e', '#28a745'];
+        if (this.correctness.level) {
+          const level = labels.indexOf(this.correctness.level) + 1;
+          return {
+            level: level,
+            label: this.correctness.level,
+            score: null,
+            title: `Highest child rating: ${this.correctness.level}`,
+            color: colors[level - 1]
+          };
+        }
+
         const {correct_count, total_count, percent} = this.correctness;
         let level = 3;
         if (percent <= 33.33)
@@ -32,7 +47,7 @@
         else if (percent <= 66.66 || total_count < 3)
           level = 2;
 
-        const label = ['weak', 'medium', 'strong'][level - 1];
+        const label = labels[level - 1];
         const score = percent.toFixed(2);
         let title = `${score}% correct (${correct_count}/${total_count} `
           + `evidence items): ${label}`;
@@ -44,7 +59,7 @@
           label: label,
           score: score,
           title: title,
-          color: ['#dc3545', '#f0ad4e', '#28a745'][level - 1]
+          color: colors[level - 1]
         };
       }
     }
