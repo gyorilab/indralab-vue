@@ -24,7 +24,35 @@
               <span class="badge badge-pill llm-verification-badge"
                     :class="llm_verification.verdict === 'correct'
                       ? 'badge-success' : 'badge-danger'">
-                AI {{ llm_verification.verdict === 'correct' ? '✓' : '×' }}
+                <i class="fas fa-robot llm-model-icon"
+                   aria-hidden="true"></i>
+                <i v-if="llm_verification.verdict === 'correct'"
+                   class="fas fa-check llm-result-icon"
+                   aria-hidden="true"></i>
+                <span v-else-if="llm_verification.error_category ===
+                                 'entity_boundaries'"
+                      class="llm-result-icon llm-boundaries-icon"
+                      aria-hidden="true"></span>
+                <span v-else-if="llm_verification.error_category === 'grounding'"
+                      class="llm-result-icon llm-grounding-icon"
+                      aria-hidden="true">
+                  <i class="fas fa-bullseye"></i>
+                  <i class="fas fa-mouse-pointer"></i>
+                </span>
+                <svg v-else-if="llm_verification.error_category ===
+                                'wrong_relation'"
+                     class="llm-result-icon llm-custom-result-icon"
+                     viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M2 12h6m4 0h10m-5-5 5 5-5 5"/>
+                </svg>
+                <svg v-else-if="llm_verification.error_category ===
+                                'act_vs_amt'"
+                     class="llm-result-icon llm-custom-result-icon"
+                     viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M2 20h5v-5h5v-5h5V5h5"/>
+                </svg>
+                <i v-else class="llm-result-icon"
+                   :class="llm_result_icon" aria-hidden="true"></i>
               </span>
               <span class="llm-verification-tooltip" role="tooltip">
                 <strong>LLM verified {{ llm_verification.verdict }}</strong>
@@ -130,6 +158,19 @@
         } else {
           return '';
         }
+      },
+
+      llm_result_icon: function() {
+        const icons = {
+          no_relation: 'far fa-times-circle',
+          polarity: 'fas fa-exchange-alt',
+          agent_conditions: 'fas fa-sliders-h',
+          mod_site: 'fas fa-map-marker-alt',
+          hypothesis: 'fas fa-question',
+          negative_result: 'fas fa-minus-circle',
+          other: 'fas fa-ellipsis-h',
+        };
+        return icons[this.llm_verification.error_category] || 'fas fa-times';
       }
     }
   }
@@ -165,8 +206,55 @@
   }
 
   .llm-verification-badge {
+    align-items: center;
+    display: inline-flex;
     font-size: 0.8rem;
+    gap: 0.35rem;
     padding: 0.3rem 0.5rem;
+  }
+
+  .llm-model-icon {
+    animation: llm-icon-pulse 2.4s ease-in-out infinite;
+  }
+
+  .llm-result-icon {
+    display: inline-block;
+    line-height: 1;
+    position: relative;
+    text-align: center;
+    width: 1.15em;
+  }
+
+  .llm-boundaries-icon {
+    border: 0.12em dashed currentColor;
+    border-radius: 0.08em;
+    height: 0.9em;
+    width: 0.9em;
+  }
+
+  .llm-custom-result-icon {
+    fill: none;
+    height: 1em;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 2.5;
+  }
+
+  .llm-grounding-icon .fa-mouse-pointer {
+    bottom: -0.25em;
+    font-size: 0.55em;
+    position: absolute;
+    right: -0.1em;
+  }
+
+  @keyframes llm-icon-pulse {
+    0%, 100% { opacity: 0.82; }
+    50% { opacity: 1; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .llm-model-icon { animation: none; }
   }
 
   .llm-verification-tooltip {
