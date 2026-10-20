@@ -215,11 +215,11 @@
   }
 
   .llm-verification-badge.badge-correct {
-    background-color: #4fb667;
+    background-color: #69c77d;
   }
 
   .llm-verification-badge.badge-incorrect {
-    background-color: #e56570;
+    background-color: #ea7f89;
   }
 
   .llm-model-icon {
