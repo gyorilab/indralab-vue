@@ -23,7 +23,7 @@
                   tabindex="0">
               <span class="badge badge-pill llm-verification-badge"
                     :class="llm_verification.verdict === 'correct'
-                      ? 'badge-success' : 'badge-danger'">
+                      ? 'badge-correct' : 'badge-incorrect'">
                 <i class="fas fa-robot llm-model-icon"
                    aria-hidden="true"></i>
                 <i v-if="llm_verification.verdict === 'correct'"
@@ -207,10 +207,19 @@
 
   .llm-verification-badge {
     align-items: center;
+    color: white;
     display: inline-flex;
     font-size: 0.8rem;
     gap: 0.35rem;
     padding: 0.3rem 0.5rem;
+  }
+
+  .llm-verification-badge.badge-correct {
+    background-color: #4fb667;
+  }
+
+  .llm-verification-badge.badge-incorrect {
+    background-color: #e56570;
   }
 
   .llm-model-icon {
