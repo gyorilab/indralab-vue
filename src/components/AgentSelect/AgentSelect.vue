@@ -10,9 +10,9 @@
         <button
           type="button"
           class="btn btn-sm btn-light btn-link btn-with-tooltip ml-1"
-          data-toggle="collapse"
           @click="isCollapsed = !isCollapsed"
-          :data-target="'#collapse-' + inputId"
+          :aria-expanded="String(!isCollapsed)"
+          :aria-controls="'collapse-' + inputId"
         >
           <i class="fas fa-chevron-down fa-sm" :class="{ 'fa-rotate-180': !isCollapsed }"></i>
             Add other agent
@@ -23,7 +23,7 @@
     </label>
 
     <template v-if="!options || options_empty">
-      <div class="collapse-container" :class="{ 'collapse': isOther, 'show': !isOther }" :id="'collapse-' + inputId">
+      <div class="collapse-container" :class="{ 'collapse': isOther, 'show': !isOther || !isCollapsed }" :id="'collapse-' + inputId">
         <div class="d-flex align-items-center flex-wrap flex-md-nowrap agent-row">
           <input
             class="form-control flex-grow-1"
@@ -228,11 +228,12 @@ export default {
       const v = this.value || {};
       const ns = typeof v.namespace === 'string' ? v.namespace.toUpperCase() : null;
       const id = typeof v.agent_id === 'string' ? v.agent_id : '';
-      if (ns && id && ns !== 'AUTO') {
+      if (ns && id && !['AUTO', 'TEXT'].includes(ns)) {
         this.agent_str = `${ns.toLowerCase()}:${id}`;
       } else {
         this.agent_str = id;
       }
+      if (this.isOther) this.isCollapsed = !id;
       this.options = null;
       this.selected_option_idx = -1;
       this.search_error = null;
